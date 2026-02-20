@@ -1,4 +1,4 @@
-# diffact
+# diffact [![Test](https://github.com/hshn/diffact/actions/workflows/test.yml/badge.svg)](https://github.com/hshn/diffact/actions/workflows/test.yml)
 
 Structural diff detection library for Scala 3. Zero external dependencies.
 

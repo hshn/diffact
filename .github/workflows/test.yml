@@ -20,3 +20,10 @@ jobs:
           cache: sbt
       - uses: sbt/setup-sbt@v1
       - run: sbt test
+
+  test-all:
+    if: always()
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+      - run: if [[ "${{ needs.test.result }}" != "success" ]]; then exit 1; fi

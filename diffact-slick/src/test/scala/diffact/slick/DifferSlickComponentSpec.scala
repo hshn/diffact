@@ -123,7 +123,7 @@ object DifferSlickComponentSpec extends ZIOSpecDefault {
           )
         )
         assertTrue(
-          result == List("added:1", "added:3", "removed:2", "changed:4->5")
+          result == List("removed:2", "added:1", "added:3", "changed:4->5")
         )
       }
       test("returns Monoid.empty for empty input") {
@@ -146,6 +146,50 @@ object DifferSlickComponentSpec extends ZIOSpecDefault {
             add = nel => DBIO.successful(nel.size),
             remove = nel => DBIO.successful(nel.size),
             change = nel => DBIO.successful(nel.size),
+          )
+        )
+        assertTrue(result == ())
+      }
+    }
+    suiteAll("Seq[Difference[A]].syncEach") {
+      test("dispatches each difference individually in remove→add→change order") {
+        val diffs: Seq[Difference[Int]] = Seq(
+          Difference.Added(1),
+          Difference.Removed(2),
+          Difference.Added(3),
+          Difference.Changed(4, 5),
+        )
+        val result = run(
+          diffs.syncEach(
+            add = d => DBIO.successful(List(s"added:${d.value}")),
+            remove = d => DBIO.successful(List(s"removed:${d.value}")),
+            change = d => DBIO.successful(List(s"changed:${d.oldValue}->${d.newValue}")),
+          )
+        )
+        assertTrue(
+          result == List("removed:2", "added:1", "added:3", "changed:4->5")
+        )
+      }
+      test("returns Monoid.empty for empty input") {
+        val diffs: Seq[Difference[Int]] = Seq.empty
+        val result                      = run(
+          diffs.syncEach(
+            add = d => DBIO.successful(List(s"added:${d.value}")),
+            remove = d => DBIO.successful(List(s"removed:${d.value}")),
+            change = d => DBIO.successful(List(s"changed:${d.oldValue}->${d.newValue}")),
+          )
+        )
+        assertTrue(result.isEmpty)
+      }
+    }
+    suiteAll("Seq[Difference[A]].syncEachDiscard") {
+      test("returns Unit") {
+        val diffs: Seq[Difference[Int]] = Seq(Difference.Added(1), Difference.Removed(2))
+        val result                      = run(
+          diffs.syncEachDiscard(
+            add = d => DBIO.successful(d.value),
+            remove = d => DBIO.successful(d.value),
+            change = d => DBIO.successful(d.oldValue),
           )
         )
         assertTrue(result == ())

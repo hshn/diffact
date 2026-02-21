@@ -1,5 +1,4 @@
 ThisBuild / scalaVersion := "3.8.1"
-useReadableConsoleGit
 ThisBuild / organization := "dev.hshn"
 ThisBuild / homepage     := Some(url("https://github.com/hshn/diffact"))
 ThisBuild / licenses     := List("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0"))

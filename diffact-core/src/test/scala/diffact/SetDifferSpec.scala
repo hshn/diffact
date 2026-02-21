@@ -12,8 +12,8 @@ object SetDifferSpec extends ZIOSpecDefault {
       test("detects added elements") {
         assertTrue(
           Differ.diff(Set(1, 2, 3)).from(Set(1, 2)).toSet == Set(
-            Difference.Added(3),
-          ),
+            Difference.Added(3)
+          )
         )
       }
       test("detects removed elements") {
@@ -21,7 +21,7 @@ object SetDifferSpec extends ZIOSpecDefault {
           Differ.diff(Set(1)).from(Set(1, 2, 3)).toSet == Set(
             Difference.Removed(2),
             Difference.Removed(3),
-          ),
+          )
         )
       }
       test("detects additions and removals simultaneously") {
@@ -29,17 +29,17 @@ object SetDifferSpec extends ZIOSpecDefault {
           Differ.diff(Set(2, 3)).from(Set(1, 2)).toSet == Set(
             Difference.Added(3),
             Difference.Removed(1),
-          ),
+          )
         )
       }
       test("returns no difference for identical Sets") {
         assertTrue(
-          Differ.diff(Set(1, 2)).from(Set(1, 2)).isEmpty,
+          Differ.diff(Set(1, 2)).from(Set(1, 2)).isEmpty
         )
       }
       test("returns no difference for empty Sets") {
         assertTrue(
-          Differ.diff(Set.empty[Int]).from(Set.empty[Int]).isEmpty,
+          Differ.diff(Set.empty[Int]).from(Set.empty[Int]).isEmpty
         )
       }
     }
@@ -61,7 +61,7 @@ object SetDifferSpec extends ZIOSpecDefault {
       test("none") {
         val differ = summon[SetDiffer[Int]]
         assertTrue(
-          differ.none.isEmpty,
+          differ.none.isEmpty
         )
       }
     }

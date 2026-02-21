@@ -1,9 +1,8 @@
 package diffact.slick
 
+import diffact.*
 import zio.Chunk
 import zio.prelude.fx.ZPure
-
-import diffact.*
 
 trait ZPureDifferSlickComponent { self: _root_.slick.jdbc.JdbcProfile =>
   trait ZPureDifferSlickApi { api: JdbcAPI =>

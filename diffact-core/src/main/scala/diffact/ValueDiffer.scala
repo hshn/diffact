@@ -19,6 +19,6 @@ trait ValueDiffer[A] extends Differ[A] { self =>
       self.diff(f(oldValue), f(newValue)).map(_ => Difference.Changed(oldValue, newValue))
     override def added(newValue: B): Some[Difference.Added[B]]     = Some(Difference.Added(newValue))
     override def removed(oldValue: B): Some[Difference.Removed[B]] = Some(Difference.Removed(oldValue))
-    override def none: None.type                                    = None
+    override def none: None.type                                   = None
   }
 }

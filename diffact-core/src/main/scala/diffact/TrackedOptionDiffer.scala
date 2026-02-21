@@ -1,7 +1,7 @@
 package diffact
 
 case class TrackedOptionDiffer[A, T](
-  tracked: TrackedValueDiffer[A, T],
+  tracked: TrackedValueDiffer[A, T]
 ) extends Differ[Option[A]] {
   override type DiffResult = Seq[Difference[A]]
 
@@ -16,5 +16,5 @@ case class TrackedOptionDiffer[A, T](
 
   override def added(newValue: Option[A]): Seq[Difference[A]]   = newValue.map(Difference.Added(_)).toSeq
   override def removed(oldValue: Option[A]): Seq[Difference[A]] = oldValue.map(Difference.Removed(_)).toSeq
-  override def none: Seq[Difference[A]]                          = Nil
+  override def none: Seq[Difference[A]]                         = Nil
 }

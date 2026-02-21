@@ -47,7 +47,7 @@ object DifferExtensionSpec extends ZIOSpecDefault {
       }
       test("returns None for missing groups") {
         val diffs: Seq[Difference[Int]] = Seq(Difference.Added(1))
-        val (added, removed, changed) = diffs.groupNelByType
+        val (added, removed, changed)   = diffs.groupNelByType
         assertTrue(
           added == Some(NonEmptyList.one(Difference.Added(1))),
           removed.isEmpty,

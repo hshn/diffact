@@ -1,9 +1,8 @@
 package diffact
 
+import cats.implicits.*
 import zio.Chunk
 import zio.prelude.fx.ZPure
-
-import cats.implicits.*
 
 extension [W, S1, S2, R, E, A](zpure: ZPure[W, S1, S2, R, E, A]) {
   def runAllStateDiff(

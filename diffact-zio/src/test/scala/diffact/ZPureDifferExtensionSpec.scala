@@ -11,21 +11,21 @@ object ZPureDifferExtensionSpec extends ZIOSpecDefault {
         val zpure  = ZPure.update[Int, Int](_ => 2).map(_ => "result")
         val result = zpure.runAllStateDiff(1)
         assertTrue(
-          result == Right((Chunk.empty, Some(Difference.Changed(oldValue = 1, newValue = 2)), "result")),
+          result == Right((Chunk.empty, Some(Difference.Changed(oldValue = 1, newValue = 2)), "result"))
         )
       }
       test("returns no diff when state is unchanged") {
         val zpure  = ZPure.get[Int].map(_ => "result")
         val result = zpure.runAllStateDiff(1)
         assertTrue(
-          result == Right((Chunk.empty, None, "result")),
+          result == Right((Chunk.empty, None, "result"))
         )
       }
       test("returns Left on error") {
         val zpure  = ZPure.get[Int] *> ZPure.fail("error")
         val result = zpure.runAllStateDiff(1)
         assertTrue(
-          result == Left("error"),
+          result == Left("error")
         )
       }
       test("preserves logs") {
@@ -37,7 +37,7 @@ object ZPureDifferExtensionSpec extends ZIOSpecDefault {
         } yield ()
         val result = zpure.runAllStateDiff(1)
         assertTrue(
-          result == Right((Chunk("log1", "log2"), Some(Difference.Changed(oldValue = 1, newValue = 2)), ())),
+          result == Right((Chunk("log1", "log2"), Some(Difference.Changed(oldValue = 1, newValue = 2)), ()))
         )
       }
     }

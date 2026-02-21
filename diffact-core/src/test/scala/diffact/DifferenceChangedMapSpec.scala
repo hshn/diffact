@@ -19,8 +19,8 @@ object DifferenceChangedMapSpec extends ZIOSpecDefault {
         )
         assertTrue(
           diff.map(_.plan) == Seq(
-            Difference.Changed(oldValue = Plan("p1", "Basic"), newValue = Plan("p1", "Pro")),
-          ),
+            Difference.Changed(oldValue = Plan("p1", "Basic"), newValue = Plan("p1", "Pro"))
+          )
         )
       }
       test("returns Removed and Added when identity differs") {
@@ -32,7 +32,7 @@ object DifferenceChangedMapSpec extends ZIOSpecDefault {
           diff.map(_.plan) == Seq(
             Difference.Removed(Plan("p1", "Basic")),
             Difference.Added(Plan("p2", "Enterprise")),
-          ),
+          )
         )
       }
     }

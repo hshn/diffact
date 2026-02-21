@@ -327,20 +327,89 @@ diffs.sync(
 
 All variants have a `syncDiscard` counterpart that discards the result and returns `DBIOAction[Unit, ...]`.
 
-### `Seq[Difference[A]]#groupByType`
+### `Seq[Difference[A]]#syncEach`
 
-Groups differences into separate sequences by type (available without Slick profile setup):
+Like `sync`, but dispatches to per-element handlers instead of batch handlers:
 
 ```scala
-import diffact.slick.groupByType
+val diffs: Seq[Difference[User]] = Differ.diff(newUsers).from(oldUsers)
 
-val diffs: Seq[Difference[User]] = ???
+diffs.syncEach(
+  add    = d => userTable += d.value,
+  remove = d => userTable.filter(_.name === d.value.name).delete,
+  change = d => userTable.filter(_.name === d.oldValue.name).update(d.newValue),
+)
+```
 
-val (added, removed, changed) = diffs.groupByType
-// (Seq[Added[User]], Seq[Removed[User]], Seq[Changed[User]])
+Also has a `syncEachDiscard` counterpart.
 
-val (addedNel, removedNel, changedNel) = diffs.groupNelByType
-// (Option[NonEmptyList[Added[User]]], Option[NonEmptyList[Removed[User]]], Option[NonEmptyList[Changed[User]]])
+### `EitherDBIOComponent`
+
+Adds monadic operations on `DBIOAction[Either[L, R], ...]`. Useful for railway-oriented programming with Slick — no ZIO dependency required.
+
+#### Setup
+
+```scala
+import diffact.slick.*
+
+object MyProfile extends slick.jdbc.PostgresProfile
+  with DifferSlickComponent
+  with EitherDBIOComponent {
+  object api extends JdbcAPI with DifferSlickApi with EitherDBIOApi
+}
+
+import MyProfile.api.*
+```
+
+#### `semiflatMap`
+
+Applies `f` to `Right` values, short-circuits on `Left`:
+
+```scala
+val action: DBIOAction[Either[MyError, User], NoStream, Effect] = ???
+
+action.semiflatMap { user =>
+  userTable.filter(_.id === user.id).update(user)
+}
+// DBIOAction[Either[MyError, Int], NoStream, Effect]
+```
+
+#### `subflatMap`
+
+Maps `Right` values with a pure `Either`-returning function:
+
+```scala
+action.subflatMap { user =>
+  if (user.isActive) Right(user) else Left(InactiveUserError)
+}
+```
+
+#### `flatMapF`
+
+Chains with another `DBIOAction[Either[...], ...]`:
+
+```scala
+action.flatMapF { user =>
+  findProfile(user.id) // DBIOAction[Either[MyError, Profile], ...]
+}
+```
+
+#### `right`
+
+Extracts `Right` when `Left` is `Nothing`:
+
+```scala
+val infallible: DBIOAction[Either[Nothing, User], NoStream, Effect] = ???
+infallible.right // DBIOAction[User, NoStream, Effect]
+```
+
+#### `rollbackOnLeft`
+
+Wraps the action in a transaction that rolls back on `Left` while preserving the `Left` value:
+
+```scala
+action.rollbackOnLeft.transactionally
+// DBIOAction[Either[MyError, User], NoStream, Effect & Effect.Transactional]
 ```
 
 ## diffact-zio-slick

@@ -39,6 +39,16 @@ object SeqDifferSpec extends ZIOSpecDefault {
           ),
         )
       }
+      test("results follow input sequence ordering") {
+        assertTrue(
+          Differ.diff(Seq(10, 20, 30, 40, 50)).from(Seq(50, 40, 30, 20, 10)) == Seq(
+            Difference.Changed(oldValue = 50, newValue = 10),
+            Difference.Changed(oldValue = 40, newValue = 20),
+            Difference.Changed(oldValue = 20, newValue = 40),
+            Difference.Changed(oldValue = 10, newValue = 50),
+          )
+        )
+      }
       test("returns no differences when values are equal") {
         assertTrue(
           Differ.diff(Seq()).from(Seq()).isEmpty,

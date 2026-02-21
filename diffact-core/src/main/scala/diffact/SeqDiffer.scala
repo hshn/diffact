@@ -13,17 +13,18 @@ case class SeqDiffer[A, T](
     val oldValueMap = toMap(oldValue)
     val newValueMap = toMap(newValue)
 
-    val added   = (newValueMap -- oldValueMap.keys).values.map(Difference.Added(_))
-    val removed = (oldValueMap -- newValueMap.keys).values.map(Difference.Removed(_))
-    val changed = (newValueMap.keySet & oldValueMap.keySet).toSeq
-      .map { key =>
-        val oldValue = oldValueMap(key)
-        val newValue = newValueMap(key)
-        differ.diff(oldValue = oldValue, newValue = newValue)
-      }
-      .collect { case Some(diff) => diff }
+    val added = newValue.zipWithIndex.collect {
+      case (v, i) if !oldValueMap.contains(tracker(v, i)) => Difference.Added(v)
+    }
+    val removed = oldValue.zipWithIndex.collect {
+      case (v, i) if !newValueMap.contains(tracker(v, i)) => Difference.Removed(v)
+    }
+    val changed = newValue.zipWithIndex.flatMap { case (v, i) =>
+      val key = tracker(v, i)
+      oldValueMap.get(key).flatMap(oldV => differ.diff(oldValue = oldV, newValue = v))
+    }
 
-    (added ++ removed ++ changed).toSeq
+    added ++ removed ++ changed
   }
 
   override def added(newValue: Seq[A]): Seq[Difference[A]]   = newValue.map(Difference.Added(_))

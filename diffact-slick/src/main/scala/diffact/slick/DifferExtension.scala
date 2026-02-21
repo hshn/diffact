@@ -4,7 +4,7 @@ import cats.data.NonEmptyList
 import diffact.Difference
 
 extension [A](diffs: Seq[Difference[A]]) {
-  def groupByType: (
+  private[slick] def groupByType: (
     Seq[Difference.Added[A]],
     Seq[Difference.Removed[A]],
     Seq[Difference.Changed[A]],
@@ -16,7 +16,7 @@ extension [A](diffs: Seq[Difference[A]]) {
     }
   }
 
-  def groupNelByType: (
+  private[slick] def groupNelByType: (
     Option[NonEmptyList[Difference.Added[A]]],
     Option[NonEmptyList[Difference.Removed[A]]],
     Option[NonEmptyList[Difference.Changed[A]]],

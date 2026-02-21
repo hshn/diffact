@@ -65,7 +65,7 @@ object SeqDifferSpec extends ZIOSpecDefault {
       test("none") {
         val differ = summon[SeqDiffer[Int, Int]]
         assertTrue(
-          differ.none.isEmpty,
+          differ.none.isEmpty
         )
       }
     }

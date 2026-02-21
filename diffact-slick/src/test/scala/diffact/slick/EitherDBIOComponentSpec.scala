@@ -1,11 +1,10 @@
 package diffact.slick
 
-import zio.Scope
-import zio.test.*
-
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
+import zio.Scope
+import zio.test.*
 
 object EitherDBIOComponentSpec extends ZIOSpecDefault {
 
@@ -30,13 +29,13 @@ object EitherDBIOComponentSpec extends ZIOSpecDefault {
     suiteAll("semiflatMap") {
       test("applies f on Right") {
         val action: DBIO[Either[String, Int]] = DBIO.successful(Right(1))
-        val result = run(action.semiflatMap(r => DBIO.successful(r + 10)))
+        val result                            = run(action.semiflatMap(r => DBIO.successful(r + 10)))
         assertTrue(result == Right(11))
       }
       test("short-circuits on Left") {
         val action: DBIO[Either[String, Int]] = DBIO.successful(Left("err"))
-        var called = false
-        val result = run(action.semiflatMap { r =>
+        var called                            = false
+        val result                            = run(action.semiflatMap { r =>
           called = true
           DBIO.successful(r + 10)
         })
@@ -47,17 +46,17 @@ object EitherDBIOComponentSpec extends ZIOSpecDefault {
     suiteAll("subflatMap") {
       test("applies f on Right returning Right") {
         val action: DBIO[Either[String, Int]] = DBIO.successful(Right(5))
-        val result = run(action.subflatMap(r => Right(r * 2)))
+        val result                            = run(action.subflatMap(r => Right(r * 2)))
         assertTrue(result == Right(10))
       }
       test("applies f on Right returning Left") {
         val action: DBIO[Either[String, Int]] = DBIO.successful(Right(5))
-        val result = run(action.subflatMap(_ => Left("from f")))
+        val result                            = run(action.subflatMap(_ => Left("from f")))
         assertTrue(result == Left("from f"))
       }
       test("short-circuits on Left") {
         val action: DBIO[Either[String, Int]] = DBIO.successful(Left("err"))
-        val result = run(action.subflatMap(r => Right(r * 2)))
+        val result                            = run(action.subflatMap(r => Right(r * 2)))
         assertTrue(result == Left("err"))
       }
     }
@@ -65,18 +64,18 @@ object EitherDBIOComponentSpec extends ZIOSpecDefault {
     suiteAll("flatMapF") {
       test("applies f on Right returning Right") {
         val action: DBIO[Either[String, Int]] = DBIO.successful(Right(3))
-        val result = run(action.flatMapF(r => DBIO.successful(Right(r + 7))))
+        val result                            = run(action.flatMapF(r => DBIO.successful(Right(r + 7))))
         assertTrue(result == Right(10))
       }
       test("applies f on Right returning Left") {
         val action: DBIO[Either[String, Int]] = DBIO.successful(Right(3))
-        val result = run(action.flatMapF(_ => DBIO.successful(Left("from f"))))
+        val result                            = run(action.flatMapF(_ => DBIO.successful(Left("from f"))))
         assertTrue(result == Left("from f"))
       }
       test("short-circuits on Left") {
         val action: DBIO[Either[String, Int]] = DBIO.successful(Left("err"))
-        var called = false
-        val result = run(action.flatMapF { r =>
+        var called                            = false
+        val result                            = run(action.flatMapF { r =>
           called = true
           DBIO.successful(Right(r))
         })
@@ -87,7 +86,7 @@ object EitherDBIOComponentSpec extends ZIOSpecDefault {
     suiteAll("right") {
       test("extracts Right when Left is Nothing") {
         val action: DBIO[Either[Nothing, Int]] = DBIO.successful(Right(42))
-        val result = run(action.right)
+        val result                             = run(action.right)
         assertTrue(result == 42)
       }
     }
@@ -96,19 +95,16 @@ object EitherDBIOComponentSpec extends ZIOSpecDefault {
       test("commits on Right") {
         run(counter.schema.createIfNotExists)
         run(counter.delete)
-        val inner: DBIO[Either[String, Int]] = (counter += 99).flatMap(_ =>
-          DBIO.successful(Right(1)): DBIO[Either[String, Int]]
-        )
-        val result = run(inner.rollbackOnLeft.transactionally)
-        val rows   = run(counter.result)
+        val inner: DBIO[Either[String, Int]] = (counter += 99).flatMap(_ => DBIO.successful(Right(1)): DBIO[Either[String, Int]])
+        val result                           = run(inner.rollbackOnLeft.transactionally)
+        val rows                             = run(counter.result)
         assertTrue(result == Right(1), rows == Seq(99))
       }
       test("rolls back on Left") {
         run(counter.schema.createIfNotExists)
         run(counter.delete)
-        val inner: DBIO[Either[String, Int]] = (counter += 99).flatMap(_ =>
-          DBIO.successful(Left("domain error")): DBIO[Either[String, Int]]
-        )
+        val inner: DBIO[Either[String, Int]] =
+          (counter += 99).flatMap(_ => DBIO.successful(Left("domain error")): DBIO[Either[String, Int]])
         val result = run(inner.rollbackOnLeft.transactionally)
         val rows   = run(counter.result)
         assertTrue(result == Left("domain error"), rows.isEmpty)
@@ -116,9 +112,8 @@ object EitherDBIOComponentSpec extends ZIOSpecDefault {
       test("propagates non-Left exceptions and rolls back") {
         run(counter.schema.createIfNotExists)
         run(counter.delete)
-        val inner: DBIO[Either[String, Int]] = (counter += 99).flatMap(_ =>
-          DBIO.failed(new RuntimeException("boom")): DBIO[Either[String, Int]]
-        )
+        val inner: DBIO[Either[String, Int]] =
+          (counter += 99).flatMap(_ => DBIO.failed(new RuntimeException("boom")): DBIO[Either[String, Int]])
         val result = scala.util.Try(run(inner.rollbackOnLeft.transactionally))
         val rows   = run(counter.result)
         assertTrue(result.isFailure, rows.isEmpty)

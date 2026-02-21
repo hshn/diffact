@@ -1,7 +1,6 @@
 package diffact.slick
 
 import cats.data.NonEmptyList
-
 import diffact.Difference
 
 extension [A](diffs: Seq[Difference[A]]) {

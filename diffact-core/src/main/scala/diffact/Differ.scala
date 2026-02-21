@@ -41,7 +41,7 @@ trait DifferInstances0 {
     }
     override def added(newValue: Any): Some[Difference.Added[Any]]     = Some(Difference.Added(newValue))
     override def removed(oldValue: Any): Some[Difference.Removed[Any]] = Some(Difference.Removed(oldValue))
-    override def none: None.type                                        = None
+    override def none: None.type                                       = None
   }
 
   given [A]: ValueDiffer[A] = DefaultDiffer.asInstanceOf[ValueDiffer[A]]

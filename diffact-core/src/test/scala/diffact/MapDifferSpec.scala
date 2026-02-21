@@ -12,22 +12,22 @@ object MapDifferSpec extends ZIOSpecDefault {
       test("detects added entries") {
         assertTrue(
           Differ.diff(Map("a" -> 1, "b" -> 2)).from(Map("a" -> 1)).toSet == Set(
-            Difference.Added(2),
-          ),
+            Difference.Added(2)
+          )
         )
       }
       test("detects removed entries") {
         assertTrue(
           Differ.diff(Map("a" -> 1)).from(Map("a" -> 1, "b" -> 2)).toSet == Set(
-            Difference.Removed(2),
-          ),
+            Difference.Removed(2)
+          )
         )
       }
       test("detects changed values") {
         assertTrue(
           Differ.diff(Map("a" -> 2)).from(Map("a" -> 1)).toSet == Set(
-            Difference.Changed(oldValue = 1, newValue = 2),
-          ),
+            Difference.Changed(oldValue = 1, newValue = 2)
+          )
         )
       }
       test("detects additions, removals, and changes simultaneously") {
@@ -36,17 +36,17 @@ object MapDifferSpec extends ZIOSpecDefault {
             Difference.Added(3),
             Difference.Removed(2),
             Difference.Changed(oldValue = 1, newValue = 10),
-          ),
+          )
         )
       }
       test("returns no difference for identical Maps") {
         assertTrue(
-          Differ.diff(Map("a" -> 1, "b" -> 2)).from(Map("a" -> 1, "b" -> 2)).isEmpty,
+          Differ.diff(Map("a" -> 1, "b" -> 2)).from(Map("a" -> 1, "b" -> 2)).isEmpty
         )
       }
       test("returns no difference for empty Maps") {
         assertTrue(
-          Differ.diff(Map.empty[String, Int]).from(Map.empty[String, Int]).isEmpty,
+          Differ.diff(Map.empty[String, Int]).from(Map.empty[String, Int]).isEmpty
         )
       }
     }
@@ -68,7 +68,7 @@ object MapDifferSpec extends ZIOSpecDefault {
       test("none") {
         val differ = summon[MapDiffer[String, Int]]
         assertTrue(
-          differ.none.isEmpty,
+          differ.none.isEmpty
         )
       }
     }

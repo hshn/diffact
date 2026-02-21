@@ -19,5 +19,5 @@ case class TrackedValueDiffer[A, T](
 
   override def added(newValue: A): Seq[Difference[A]]   = Seq(Difference.Added(newValue))
   override def removed(oldValue: A): Seq[Difference[A]] = Seq(Difference.Removed(oldValue))
-  override def none: Seq[Difference[A]]                  = Nil
+  override def none: Seq[Difference[A]]                 = Nil
 }

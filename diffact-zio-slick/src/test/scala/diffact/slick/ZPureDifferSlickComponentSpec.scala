@@ -1,12 +1,11 @@
 package diffact.slick
 
 import diffact.*
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 import zio.*
 import zio.prelude.fx.ZPure
 import zio.test.*
-
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
 
 object ZPureDifferSlickComponentSpec extends ZIOSpecDefault {
 
@@ -26,21 +25,21 @@ object ZPureDifferSlickComponentSpec extends ZIOSpecDefault {
         val zpure  = ZPure.update[Int, Int](_ => 2).map(_ => "result")
         val result = run(zpure.runAllStateAsDBIO(1))
         assertTrue(
-          result == Right((Chunk.empty, Some(Difference.Changed(oldValue = 1, newValue = 2)), "result")),
+          result == Right((Chunk.empty, Some(Difference.Changed(oldValue = 1, newValue = 2)), "result"))
         )
       }
       test("wraps no-change result in DBIO") {
         val zpure  = ZPure.get[Int].map(_ => "result")
         val result = run(zpure.runAllStateAsDBIO(1))
         assertTrue(
-          result == Right((Chunk.empty, None, "result")),
+          result == Right((Chunk.empty, None, "result"))
         )
       }
       test("wraps error result in DBIO") {
         val zpure  = ZPure.get[Int] *> ZPure.fail("error")
         val result = run(zpure.runAllStateAsDBIO(1))
         assertTrue(
-          result == Left("error"),
+          result == Left("error")
         )
       }
     }

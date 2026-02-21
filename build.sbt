@@ -1,10 +1,19 @@
 ThisBuild / scalaVersion := "3.8.1"
 ThisBuild / organization := "dev.hshn"
+ThisBuild / homepage     := Some(url("https://github.com/hshn/diffact"))
+ThisBuild / licenses     := List("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0"))
+ThisBuild / developers   := List(
+  Developer("hshn", "Shota Hoshino", "sht.hshn@gmail.com", url("https://github.com/hshn")),
+)
+ThisBuild / description := "Structural diff detection library for Scala 3"
 
 val zioVersion = "2.1.22"
 
 lazy val diffact = (project in file(".") withId "diffact")
   .aggregate(diffactCore, diffactZio, diffactSlick, diffactZioSlick)
+  .settings(
+    publish / skip := true,
+  )
 
 lazy val diffactCore = (project in file("diffact-core"))
   .settings(

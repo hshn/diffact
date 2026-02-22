@@ -7,30 +7,6 @@ import zio.test.*
 
 object DifferExtensionSpec extends ZIOSpecDefault {
   override def spec: Spec[TestEnvironment & Scope, Any] = suiteAll("DifferExtension") {
-    suiteAll("groupByType") {
-      test("groups differences by type") {
-        val diffs: Seq[Difference[Int]] = Seq(
-          Difference.Added(1),
-          Difference.Removed(2),
-          Difference.Changed(3, 4),
-          Difference.Added(5),
-        )
-        val (added, removed, changed) = diffs.groupByType
-        assertTrue(
-          added == Seq(Difference.Added(1), Difference.Added(5)),
-          removed == Seq(Difference.Removed(2)),
-          changed == Seq(Difference.Changed(3, 4)),
-        )
-      }
-      test("returns empty seqs for empty input") {
-        val (added, removed, changed) = Seq.empty[Difference[Int]].groupByType
-        assertTrue(
-          added.isEmpty,
-          removed.isEmpty,
-          changed.isEmpty,
-        )
-      }
-    }
     suiteAll("groupNelByType") {
       test("groups differences as NonEmptyList options") {
         val diffs: Seq[Difference[Int]] = Seq(

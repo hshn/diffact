@@ -1,6 +1,5 @@
 package diffact
 
-import diffact.DifferenceShow.*
 import zio.Scope
 import zio.test.Spec
 import zio.test.TestEnvironment

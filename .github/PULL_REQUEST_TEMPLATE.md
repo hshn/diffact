@@ -5,7 +5,3 @@
 ## Changes
 
 -
-
-## Test Plan
-
-- [ ] Tests pass locally (`sbt test`)

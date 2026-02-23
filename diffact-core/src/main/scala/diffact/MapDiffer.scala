@@ -1,17 +1,17 @@
 package diffact
 
 case class MapDiffer[K, V](differ: ValueDiffer[V]) extends Differ[Map[K, V]] {
-  override type DiffResult = Seq[Difference[V]]
+  override type DiffResult = Seq[(K, Difference[V])]
 
   override def diff(oldValue: Map[K, V], newValue: Map[K, V]): DiffResult = {
-    val added   = (newValue -- oldValue.keys).values.toSeq.map(Difference.Added(_))
-    val removed = (oldValue -- newValue.keys).values.toSeq.map(Difference.Removed(_))
+    val added   = (newValue -- oldValue.keys).toSeq.map((k, v) => k -> Difference.Added(v))
+    val removed = (oldValue -- newValue.keys).toSeq.map((k, v) => k -> Difference.Removed(v))
     val changed = (newValue.keySet & oldValue.keySet).toSeq
-      .flatMap(key => differ.diff(oldValue = oldValue(key), newValue = newValue(key)))
+      .flatMap(key => differ.diff(oldValue = oldValue(key), newValue = newValue(key)).map(d => key -> d))
     added ++ removed ++ changed
   }
 
-  override def added(newValue: Map[K, V]): Seq[Difference[V]]   = newValue.values.toSeq.map(Difference.Added(_))
-  override def removed(oldValue: Map[K, V]): Seq[Difference[V]] = oldValue.values.toSeq.map(Difference.Removed(_))
-  override def none: Seq[Difference[V]]                         = Nil
+  override def added(newValue: Map[K, V]): Seq[(K, Difference[V])]   = newValue.toSeq.map((k, v) => k -> Difference.Added(v))
+  override def removed(oldValue: Map[K, V]): Seq[(K, Difference[V])] = oldValue.toSeq.map((k, v) => k -> Difference.Removed(v))
+  override def none: Seq[(K, Difference[V])]                         = Nil
 }

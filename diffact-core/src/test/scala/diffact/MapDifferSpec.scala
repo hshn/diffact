@@ -12,30 +12,30 @@ object MapDifferSpec extends ZIOSpecDefault {
       test("detects added entries") {
         assertTrue(
           Differ.diff(Map("a" -> 1, "b" -> 2)).from(Map("a" -> 1)).toSet == Set(
-            Difference.Added(2)
+            "b" -> Difference.Added(2)
           )
         )
       }
       test("detects removed entries") {
         assertTrue(
           Differ.diff(Map("a" -> 1)).from(Map("a" -> 1, "b" -> 2)).toSet == Set(
-            Difference.Removed(2)
+            "b" -> Difference.Removed(2)
           )
         )
       }
       test("detects changed values") {
         assertTrue(
           Differ.diff(Map("a" -> 2)).from(Map("a" -> 1)).toSet == Set(
-            Difference.Changed(oldValue = 1, newValue = 2)
+            "a" -> Difference.Changed(oldValue = 1, newValue = 2)
           )
         )
       }
       test("detects additions, removals, and changes simultaneously") {
         assertTrue(
           Differ.diff(Map("a" -> 10, "c" -> 3)).from(Map("a" -> 1, "b" -> 2)).toSet == Set(
-            Difference.Added(3),
-            Difference.Removed(2),
-            Difference.Changed(oldValue = 1, newValue = 10),
+            "c" -> Difference.Added(3),
+            "b" -> Difference.Removed(2),
+            "a" -> Difference.Changed(oldValue = 1, newValue = 10),
           )
         )
       }
@@ -54,14 +54,14 @@ object MapDifferSpec extends ZIOSpecDefault {
       test("added") {
         val differ = summon[MapDiffer[String, Int]]
         assertTrue(
-          differ.added(Map("a" -> 1, "b" -> 2)).toSet == Set(Difference.Added(1), Difference.Added(2)),
+          differ.added(Map("a" -> 1, "b" -> 2)).toSet == Set("a" -> Difference.Added(1), "b" -> Difference.Added(2)),
           differ.added(Map.empty[String, Int]).isEmpty,
         )
       }
       test("removed") {
         val differ = summon[MapDiffer[String, Int]]
         assertTrue(
-          differ.removed(Map("a" -> 1, "b" -> 2)).toSet == Set(Difference.Removed(1), Difference.Removed(2)),
+          differ.removed(Map("a" -> 1, "b" -> 2)).toSet == Set("a" -> Difference.Removed(1), "b" -> Difference.Removed(2)),
           differ.removed(Map.empty[String, Int]).isEmpty,
         )
       }

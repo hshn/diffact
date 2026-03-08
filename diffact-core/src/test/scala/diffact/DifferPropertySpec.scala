@@ -5,8 +5,8 @@ import zio.test.Gen
 import zio.test.Spec
 import zio.test.TestEnvironment
 import zio.test.ZIOSpecDefault
-import zio.test.check
 import zio.test.assertTrue
+import zio.test.check
 
 object DifferPropertySpec extends ZIOSpecDefault {
   override def spec: Spec[TestEnvironment & Scope, Any] = suiteAll("Differ properties") {

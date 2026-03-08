@@ -3,10 +3,12 @@ package diffact.slick
 import cats.data.NonEmptyList
 import cats.implicits.*
 import cats.kernel.Monoid
+import slick.jdbc.JdbcProfile
+
 import diffact.*
 import scala.concurrent.ExecutionContext
 
-trait DifferComponent { self: _root_.slick.jdbc.JdbcProfile =>
+trait DifferComponent { self: JdbcProfile =>
   trait DifferApi { api: JdbcAPI =>
 
     extension [A](diff: Difference[A]) {

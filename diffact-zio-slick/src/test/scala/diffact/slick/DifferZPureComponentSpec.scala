@@ -1,11 +1,12 @@
 package diffact.slick
 
-import diffact.*
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
 import zio.*
 import zio.prelude.fx.ZPure
 import zio.test.*
+
+import diffact.*
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 
 object DifferZPureComponentSpec extends ZIOSpecDefault {
 

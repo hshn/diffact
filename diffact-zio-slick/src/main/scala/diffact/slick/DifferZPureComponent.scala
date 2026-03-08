@@ -1,10 +1,13 @@
 package diffact.slick
 
-import diffact.*
 import zio.Chunk
 import zio.prelude.fx.ZPure
 
-trait DifferZPureComponent { self: _root_.slick.jdbc.JdbcProfile =>
+import slick.jdbc.JdbcProfile
+
+import diffact.*
+
+trait DifferZPureComponent { self: JdbcProfile =>
   trait DifferZPureApi { api: JdbcAPI =>
 
     extension [W, S1, S2, R, E, A](zpure: ZPure[W, S1, S2, R, E, A]) {

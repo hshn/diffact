@@ -1,13 +1,15 @@
 package diffact.slick
 
+import zio.Scope
+import zio.test.*
+
 import cats.implicits.*
 import cats.kernel.Monoid
+
 import diffact.Difference
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
-import zio.Scope
-import zio.test.*
 
 object DifferComponentSpec extends ZIOSpecDefault {
 

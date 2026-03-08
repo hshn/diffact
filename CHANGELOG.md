@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/hshn/diffact/compare/v0.3.0...v0.4.0) (2026-03-08)
+
+
+### Features
+
+* improve API consistency across Differ types ([#34](https://github.com/hshn/diffact/issues/34)) ([4dd67dc](https://github.com/hshn/diffact/commit/4dd67dc6cf560afb3a0979eb4c3f1184a0a85a88))
+
 ## [0.3.0](https://github.com/hshn/diffact/compare/v0.2.0...v0.3.0) (2026-03-08)
 
 

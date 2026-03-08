@@ -22,11 +22,10 @@ object OptionDifferSpec extends ZIOSpecDefault {
         )
       }
       test("returns no difference when values are equal") {
-        assertTrue(
-          Differ.diff(Option(one)).from(Option(one)).isEmpty,
-          Differ.diff(Option(two)).from(Option(two)).isEmpty,
-          Differ.diff(empty).from(empty).isEmpty,
-        )
+        val sameOne  = Differ.diff(Option(one)).from(Option(one)).equals(None)
+        val sameTwo  = Differ.diff(Option(two)).from(Option(two)).equals(None)
+        val bothNone = Differ.diff(empty).from(empty).equals(None)
+        assertTrue(sameOne, sameTwo, bothNone)
       }
     }
     suiteAll("added / removed / none") {
@@ -37,23 +36,91 @@ object OptionDifferSpec extends ZIOSpecDefault {
         )
       }
       test("added(None)") {
-        val differ = summon[OptionDiffer[Int]]
-        assertTrue(
-          differ.added(None).isEmpty
-        )
+        val differ  = summon[OptionDiffer[Int]]
+        val isEmpty = differ.added(None).equals(None)
+        assertTrue(isEmpty)
       }
       test("removed") {
-        val differ = summon[OptionDiffer[Int]]
+        val differ      = summon[OptionDiffer[Int]]
+        val noneIsEmpty = differ.removed(None).equals(None)
         assertTrue(
           differ.removed(Some(1)) == Some(Difference.Removed(1)),
-          differ.removed(None).isEmpty,
+          noneIsEmpty,
         )
       }
       test("none") {
-        val differ = summon[OptionDiffer[Int]]
+        val differ  = summon[OptionDiffer[Int]]
+        val isEmpty = differ.none.equals(None)
+        assertTrue(isEmpty)
+      }
+    }
+    suiteAll("with MapDiffer") {
+      val differ = summon[MapDiffer[String, Int]].toOption
+
+      test("diff Some to Some") {
         assertTrue(
-          differ.none.isEmpty
+          differ.diff(Some(Map("a" -> 1)), Some(Map("a" -> 2))) == Seq("a" -> Difference.Changed(1, 2))
         )
+      }
+      test("diff Some to None") {
+        assertTrue(
+          differ.diff(Some(Map("a" -> 1)), None) == Seq("a" -> Difference.Removed(1))
+        )
+      }
+      test("diff None to Some") {
+        assertTrue(
+          differ.diff(None, Some(Map("a" -> 1))) == Seq("a" -> Difference.Added(1))
+        )
+      }
+      test("diff None to None") {
+        val isEmpty = differ.diff(None, None).equals(Nil)
+        assertTrue(isEmpty)
+      }
+    }
+    suiteAll("with SeqDiffer") {
+      val differ = summon[SeqDiffer[Int, Int]].toOption
+
+      test("diff Some to Some") {
+        assertTrue(
+          differ.diff(Some(Seq(1, 2)), Some(Seq(1, 3))) == Seq(Difference.Changed(2, 3))
+        )
+      }
+      test("diff Some to None") {
+        assertTrue(
+          differ.diff(Some(Seq(1)), None) == Seq(Difference.Removed(1))
+        )
+      }
+      test("diff None to Some") {
+        assertTrue(
+          differ.diff(None, Some(Seq(1))) == Seq(Difference.Added(1))
+        )
+      }
+      test("diff None to None") {
+        val isEmpty = differ.diff(None, None).equals(Nil)
+        assertTrue(isEmpty)
+      }
+    }
+    suiteAll("with SetDiffer") {
+      val differ = summon[SetDiffer[Int]].toOption
+
+      test("diff Some to Some") {
+        assertTrue(
+          differ.diff(Some(Set(1, 2)), Some(Set(2, 3))) == Seq(Difference.Added(3), Difference.Removed(1))
+        )
+      }
+      test("diff Some to None") {
+        assertTrue(
+          differ.diff(Some(Set(1)), None) == Seq(Difference.Removed(1))
+        )
+      }
+      test("diff None to Some") {
+        assertTrue(
+          differ.diff(None, Some(Set(1))) == Seq(Difference.Added(1))
+        )
+      }
+      test("diff None to None") {
+        val isEmpty = differ.diff(None, None).equals(Nil)
+        assertTrue(isEmpty)
       }
     }
   }

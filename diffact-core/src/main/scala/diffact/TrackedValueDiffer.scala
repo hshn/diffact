@@ -6,8 +6,7 @@ case class TrackedValueDiffer[A, T](
 ) extends Differ[A] {
   override type DiffResult = Seq[Difference[A]]
 
-  def toSeq: SeqDiffer[A, T]              = SeqDiffer((a, _) => tracker(a), differ)
-  def toOption: TrackedOptionDiffer[A, T] = TrackedOptionDiffer(this)
+  def toSeq: SeqDiffer[A, T] = SeqDiffer((a, _) => tracker(a), differ)
 
   override def diff(oldValue: A, newValue: A): Seq[Difference[A]] = {
     if (tracker(oldValue) == tracker(newValue)) {

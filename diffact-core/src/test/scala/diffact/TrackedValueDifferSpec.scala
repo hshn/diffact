@@ -9,7 +9,7 @@ import zio.test.assertTrue
 object TrackedValueDifferSpec extends ZIOSpecDefault {
   override def spec: Spec[TestEnvironment & Scope, Any] = suiteAll("TrackedValueDiffer") {
     suiteAll("diff") {
-      val differ: TrackedValueDiffer[Plan, String] = Differ[Plan].trackBy(_.id)
+      val differ: TrackedValueDiffer[Plan, String] = ValueDiffer[Plan].trackBy(_.id)
 
       test("returns Changed when values differ with same identity") {
         assertTrue(
@@ -61,7 +61,7 @@ object TrackedValueDifferSpec extends ZIOSpecDefault {
       }
     }
     suiteAll("fluent API") {
-      given TrackedValueDiffer[Plan, String] = Differ[Plan].trackBy(_.id)
+      given TrackedValueDiffer[Plan, String] = ValueDiffer[Plan].trackBy(_.id)
 
       test("resolves given instance via Differ.diff(x).from(y)") {
         assertTrue(

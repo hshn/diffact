@@ -95,7 +95,7 @@ Use `trackBy` to track elements by a custom key (e.g. ID):
 ```scala
 case class Baz(id: String, qux: String)
 
-given SeqDiffer[Baz, String] = Differ[Baz].trackBy(_.id).toSeq
+given SeqDiffer[Baz, String] = ValueDiffer[Baz].trackBy(_.id).toSeq
 
 val oldItems = Seq(Baz("b1", "q1"), Baz("b2", "q2"), Baz("b3", "q3"))
 val newItems = Seq(Baz("b2", "q2222"), Baz("b1", "q1"))
@@ -139,16 +139,16 @@ case class Removed[+A](value: A)                 extends Difference[A]
 case class Changed[+A](oldValue: A, newValue: A) extends Difference[A]
 ```
 
-### `Changed#map` — nested diff
+### `Difference#map` — nested diff
 
-`Changed#map` transforms a `Changed` into a diff of a nested field:
+`Difference#map` transforms a `Difference` into a diff of a nested field:
 
 ```scala
 case class Foo(bar: String, baz: Seq[Baz])
 case class Baz(id: String, qux: String)
 
 // trackBy(_.id) so elements are matched by ID, not by position
-given SeqDiffer[Baz, String] = Differ[Baz].trackBy(_.id).toSeq
+given SeqDiffer[Baz, String] = ValueDiffer[Baz].trackBy(_.id).toSeq
 
 val diff = Difference.Changed(
   oldValue = Foo("1", Seq(Baz("b1", "q1"), Baz("b2", "q2"), Baz("b3", "q3"))),
@@ -173,7 +173,7 @@ Result type: `Seq[Difference[A]]`
 ```scala
 case class Plan(id: String, name: String)
 
-val differ: TrackedValueDiffer[Plan, String] = Differ[Plan].trackBy(_.id)
+val differ: TrackedValueDiffer[Plan, String] = ValueDiffer[Plan].trackBy(_.id)
 
 // Same identity, different value → Changed
 differ.diff(Plan("p1", "Basic"), Plan("p1", "Pro"))
@@ -191,7 +191,7 @@ differ.diff(Plan("p1", "Basic"), Plan("p1", "Basic"))
 `TrackedValueDiffer` can be lifted to a `SeqDiffer` via `toSeq`:
 
 ```scala
-given SeqDiffer[Plan, String] = Differ[Plan].trackBy(_.id).toSeq
+given SeqDiffer[Plan, String] = ValueDiffer[Plan].trackBy(_.id).toSeq
 ```
 
 ## Advanced
@@ -203,7 +203,7 @@ given SeqDiffer[Plan, String] = Differ[Plan].trackBy(_.id).toSeq
 ```scala
 case class Wrapper(value: Int)
 
-val differ: ValueDiffer[Wrapper] = Differ[Int].contramap(_.value)
+val differ: ValueDiffer[Wrapper] = ValueDiffer[Int].contramap(_.value)
 
 differ.diff(Wrapper(1), Wrapper(2))
 // Some(Changed(Wrapper(1), Wrapper(2)))
@@ -217,8 +217,8 @@ Combined with `SeqDiffer`, `contramap` enables fine-grained control over what co
 ```scala
 case class Item(id: String, name: String)
 
-given ValueDiffer[Item]          = Differ[String].contramap(_.name)
-given SeqDiffer[Item, String]    = Differ[Item].trackBy(_.id).toSeq
+given ValueDiffer[Item]          = ValueDiffer[String].contramap(_.name)
+given SeqDiffer[Item, String]    = ValueDiffer[Item].trackBy(_.id).toSeq
 
 val oldItems = Seq(Item("1", "alice"), Item("2", "bob"))
 val newItems = Seq(Item("1", "alice"), Item("2", "BOB"))

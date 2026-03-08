@@ -82,17 +82,17 @@ object ValueDifferSpec extends ZIOSpecDefault {
     suiteAll("added / removed / none") {
       test("added") {
         assertTrue(
-          Differ[Int].added(1) == Some(Difference.Added(1))
+          ValueDiffer[Int].added(1) == Some(Difference.Added(1))
         )
       }
       test("removed") {
         assertTrue(
-          Differ[Int].removed(1) == Some(Difference.Removed(1))
+          ValueDiffer[Int].removed(1) == Some(Difference.Removed(1))
         )
       }
       test("none") {
         assertTrue(
-          Differ[Int].none.isEmpty
+          ValueDiffer[Int].none.isEmpty
         )
       }
     }
@@ -100,32 +100,32 @@ object ValueDifferSpec extends ZIOSpecDefault {
       case class Wrapper(value: Int)
 
       test("compares by projected value and returns result in original type") {
-        val differ: ValueDiffer[Wrapper] = Differ[Int].contramap(_.value)
+        val differ: ValueDiffer[Wrapper] = ValueDiffer[Int].contramap(_.value)
         assertTrue(
           differ.diff(Wrapper(1), Wrapper(2)) == Some(Difference.Changed(Wrapper(1), Wrapper(2))),
           differ.diff(Wrapper(1), Wrapper(1)).isEmpty,
         )
       }
       test("added") {
-        val differ: ValueDiffer[Wrapper] = Differ[Int].contramap(_.value)
+        val differ: ValueDiffer[Wrapper] = ValueDiffer[Int].contramap(_.value)
         assertTrue(
           differ.added(Wrapper(1)) == Some(Difference.Added(Wrapper(1)))
         )
       }
       test("removed") {
-        val differ: ValueDiffer[Wrapper] = Differ[Int].contramap(_.value)
+        val differ: ValueDiffer[Wrapper] = ValueDiffer[Int].contramap(_.value)
         assertTrue(
           differ.removed(Wrapper(1)) == Some(Difference.Removed(Wrapper(1)))
         )
       }
       test("none") {
-        val differ: ValueDiffer[Wrapper] = Differ[Int].contramap(_.value)
+        val differ: ValueDiffer[Wrapper] = ValueDiffer[Int].contramap(_.value)
         assertTrue(
           differ.none.isEmpty
         )
       }
       test("identity projection returns same result as default") {
-        val differ: ValueDiffer[Int] = Differ[Int].contramap(identity)
+        val differ: ValueDiffer[Int] = ValueDiffer[Int].contramap(identity)
         assertTrue(
           differ.diff(1, 2) == Some(Difference.Changed(1, 2)),
           differ.diff(1, 1).isEmpty,
@@ -133,8 +133,8 @@ object ValueDifferSpec extends ZIOSpecDefault {
       }
       test("works with SeqDiffer") {
         case class Item(id: String, name: String)
-        given ValueDiffer[Item]       = Differ[String].contramap(_.name)
-        given SeqDiffer[Item, String] = Differ[Item].trackBy(_.id).toSeq
+        given ValueDiffer[Item]       = ValueDiffer[String].contramap(_.name)
+        given SeqDiffer[Item, String] = ValueDiffer[Item].trackBy(_.id).toSeq
 
         val oldItems = Seq(Item("1", "alice"), Item("2", "bob"))
         val newItems = Seq(Item("1", "alice"), Item("2", "BOB"))

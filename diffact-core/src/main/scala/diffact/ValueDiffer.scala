@@ -1,5 +1,9 @@
 package diffact
 
+object ValueDiffer {
+  def apply[A](using differ: ValueDiffer[A]): ValueDiffer[A] = differ
+}
+
 trait ValueDiffer[A] extends Differ[A] { self =>
   override type DiffResult = Option[Difference[A]]
 

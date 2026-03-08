@@ -6,9 +6,9 @@ import zio.test.TestEnvironment
 import zio.test.ZIOSpecDefault
 import zio.test.assertTrue
 
-object TrackedOptionDifferSpec extends ZIOSpecDefault {
-  override def spec: Spec[TestEnvironment & Scope, Any] = suiteAll("TrackedOptionDiffer") {
-    val differ: TrackedOptionDiffer[Plan, String] = Differ[Plan].trackBy(_.id).toOption
+object TrackedValueOptionDifferSpec extends ZIOSpecDefault {
+  override def spec: Spec[TestEnvironment & Scope, Any] = suiteAll("OptionDiffer with TrackedValueDiffer") {
+    val differ: OptionDiffer[Plan] = Differ[Plan].trackBy(_.id).toOption
 
     test("returns Changed when values differ with same identity") {
       assertTrue(
@@ -18,9 +18,8 @@ object TrackedOptionDifferSpec extends ZIOSpecDefault {
       )
     }
     test("returns no difference when values are equal with same identity") {
-      assertTrue(
-        differ.diff(Some(Plan("p1", "Basic")), Some(Plan("p1", "Basic"))).isEmpty
-      )
+      val isEmpty = differ.diff(Some(Plan("p1", "Basic")), Some(Plan("p1", "Basic"))).equals(Nil)
+      assertTrue(isEmpty)
     }
     test("returns Removed and Added when identity differs") {
       assertTrue(
@@ -45,9 +44,8 @@ object TrackedOptionDifferSpec extends ZIOSpecDefault {
       )
     }
     test("returns no difference for None to None") {
-      assertTrue(
-        differ.diff(None, None).isEmpty
-      )
+      val isEmpty = differ.diff(None, None).equals(Nil)
+      assertTrue(isEmpty)
     }
     test("added(Some)") {
       assertTrue(
@@ -55,9 +53,8 @@ object TrackedOptionDifferSpec extends ZIOSpecDefault {
       )
     }
     test("added(None)") {
-      assertTrue(
-        differ.added(None).isEmpty
-      )
+      val isEmpty = differ.added(None).equals(Nil)
+      assertTrue(isEmpty)
     }
     test("removed(Some)") {
       assertTrue(
@@ -65,14 +62,12 @@ object TrackedOptionDifferSpec extends ZIOSpecDefault {
       )
     }
     test("removed(None)") {
-      assertTrue(
-        differ.removed(None).isEmpty
-      )
+      val isEmpty = differ.removed(None).equals(Nil)
+      assertTrue(isEmpty)
     }
     test("none") {
-      assertTrue(
-        differ.none.isEmpty
-      )
+      val isEmpty = differ.none.equals(Nil)
+      assertTrue(isEmpty)
     }
   }
 

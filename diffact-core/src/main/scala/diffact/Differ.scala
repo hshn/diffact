@@ -8,6 +8,8 @@ trait Differ[A] {
   def added(newValue: A): DiffResult
   def removed(oldValue: A): DiffResult
   def none: DiffResult
+
+  final def toOption: OptionDiffer[A] = OptionDiffer(this)
 }
 
 object Differ extends DifferInstances {
@@ -27,10 +29,10 @@ object Differ extends DifferInstances {
 }
 
 trait DifferInstances extends DifferInstances0 {
-  given [A: ValueDiffer]: SeqDiffer[A, Int]  = Differ[A].toSeq
-  given [A: ValueDiffer]: OptionDiffer[A]    = Differ[A].toOption
-  given [A]: SetDiffer[A]                    = SetDiffer()
-  given [K, V: ValueDiffer]: MapDiffer[K, V] = Differ[V].toMap
+  given [A: ValueDiffer]: SeqDiffer[A, Int]      = Differ[A].toSeq
+  given [A](using d: Differ[A]): OptionDiffer[A] = d.toOption
+  given [A]: SetDiffer[A]                        = SetDiffer()
+  given [K, V: ValueDiffer]: MapDiffer[K, V]     = Differ[V].toMap
 }
 
 trait DifferInstances0 {

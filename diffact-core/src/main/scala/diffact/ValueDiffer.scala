@@ -11,7 +11,6 @@ trait ValueDiffer[A] extends Differ[A] { self =>
   def trackBy[T](tracker: A => T): TrackedValueDiffer[A, T] = TrackedValueDiffer(tracker, this)
 
   def toSeq: SeqDiffer[A, Int]  = SeqDiffer((_, index) => index, this)
-  def toOption: OptionDiffer[A] = OptionDiffer(this)
   def toMap[K]: MapDiffer[K, A] = MapDiffer(this)
 
   def contramap[B](f: B => A): ValueDiffer[B] = new ValueDiffer[B] {

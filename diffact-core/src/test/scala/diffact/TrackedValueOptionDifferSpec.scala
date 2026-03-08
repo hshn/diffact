@@ -8,7 +8,7 @@ import zio.test.assertTrue
 
 object TrackedValueOptionDifferSpec extends ZIOSpecDefault {
   override def spec: Spec[TestEnvironment & Scope, Any] = suiteAll("OptionDiffer with TrackedValueDiffer") {
-    val differ: OptionDiffer[Plan] = Differ[Plan].trackBy(_.id).toOption
+    val differ: OptionDiffer[Plan] = ValueDiffer[Plan].trackBy(_.id).toOption
 
     test("returns Changed when values differ with same identity") {
       assertTrue(

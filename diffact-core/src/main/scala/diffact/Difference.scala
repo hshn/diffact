@@ -10,13 +10,17 @@ sealed trait Difference[+A] extends Product with Serializable {
     case Difference.Removed(value)              => removed(value)
     case Difference.Changed(oldValue, newValue) => changed(oldValue, newValue)
   }
+
+  def map[B](f: A => B)(using differ: Differ[B]): differ.DiffResult = this match {
+    case Difference.Added(value)                => differ.added(f(value))
+    case Difference.Removed(value)              => differ.removed(f(value))
+    case Difference.Changed(oldValue, newValue) => differ.diff(oldValue = f(oldValue), newValue = f(newValue))
+  }
 }
 object Difference {
   case class Added[+A](value: A)                   extends Difference[A]
   case class Removed[+A](value: A)                 extends Difference[A]
-  case class Changed[+A](oldValue: A, newValue: A) extends Difference[A] {
-    def map[B](f: A => B)(using differ: Differ[B]): differ.DiffResult = differ.diff(oldValue = f(oldValue), newValue = f(newValue))
-  }
+  case class Changed[+A](oldValue: A, newValue: A) extends Difference[A]
 
   extension [A](diff: Difference[A]) {
     def show(using s: Show[A]): String = diff match {

@@ -83,7 +83,7 @@ object SeqDifferSpec extends ZIOSpecDefault {
       test("throws exception when duplicate tracking keys exist") {
         import scala.util.Try
 
-        given SeqDiffer[Baz, String] = Differ[Baz].trackBy(_.id).toSeq
+        given SeqDiffer[Baz, String] = ValueDiffer[Baz].trackBy(_.id).toSeq
 
         val duplicates = Seq(Baz(id = "b1", qux = "q1"), Baz(id = "b1", qux = "q2"))
         assertTrue(

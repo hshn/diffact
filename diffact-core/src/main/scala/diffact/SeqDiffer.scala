@@ -2,7 +2,7 @@ package diffact
 
 case class SeqDiffer[A, T](
   tracker: (A, Int) => T,
-  differ: ValueDiffer[A],
+  differ: Differ[A] { type DiffResult <: IterableOnce[Difference[A]] },
 ) extends Differ[Seq[A]] {
   override type DiffResult = Seq[Difference[A]]
 
@@ -21,7 +21,7 @@ case class SeqDiffer[A, T](
     }
     val changed = newValue.zipWithIndex.flatMap { case (v, i) =>
       val key = tracker(v, i)
-      oldValueMap.get(key).flatMap(oldV => differ.diff(oldValue = oldV, newValue = v))
+      oldValueMap.get(key).toSeq.flatMap(oldV => differ.diff(oldValue = oldV, newValue = v))
     }
 
     added ++ removed ++ changed

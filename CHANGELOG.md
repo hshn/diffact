@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/hshn/diffact/compare/v0.2.0...v0.3.0) (2026-03-08)
+
+
+### Features
+
+* generalize OptionDiffer to accept any Differ[A] ([#32](https://github.com/hshn/diffact/issues/32)) ([f825f3b](https://github.com/hshn/diffact/commit/f825f3b06f01b07bbb402cafda27cf2e5b306043))
+
 ## [0.2.0](https://github.com/hshn/diffact/compare/v0.1.0...v0.2.0) (2026-02-23)
 
 

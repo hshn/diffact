@@ -1,6 +1,7 @@
 package diffact.slick
 
 import cats.data.NonEmptyList
+
 import diffact.Difference
 import diffact.GroupedDifferences.*
 

@@ -1,9 +1,11 @@
 package diffact.slick
 
-import cats.data.NonEmptyList
-import diffact.Difference
 import zio.Scope
 import zio.test.*
+
+import cats.data.NonEmptyList
+
+import diffact.Difference
 
 object DifferExtensionSpec extends ZIOSpecDefault {
   override def spec: Spec[TestEnvironment & Scope, Any] = suiteAll("DifferExtension") {

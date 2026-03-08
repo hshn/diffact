@@ -270,13 +270,13 @@ Slick integration for synchronizing differences to a database via `DBIOAction`.
 
 ### Setup
 
-Mix `DifferSlickComponent` into your Slick profile:
+Mix `DifferComponent` into your Slick profile:
 
 ```scala
 import diffact.slick.*
 
-object MyProfile extends slick.jdbc.PostgresProfile with DifferSlickComponent {
-  object api extends JdbcAPI with DifferSlickApi
+object MyProfile extends slick.jdbc.PostgresProfile with DifferComponent {
+  object api extends JdbcAPI with DifferApi
 }
 
 import MyProfile.api.*
@@ -343,75 +343,6 @@ diffs.syncEach(
 
 Also has a `syncEachDiscard` counterpart.
 
-### `EitherDBIOComponent`
-
-Adds monadic operations on `DBIOAction[Either[L, R], ...]`. Useful for railway-oriented programming with Slick — no ZIO dependency required.
-
-#### Setup
-
-```scala
-import diffact.slick.*
-
-object MyProfile extends slick.jdbc.PostgresProfile
-  with DifferSlickComponent
-  with EitherDBIOComponent {
-  object api extends JdbcAPI with DifferSlickApi with EitherDBIOApi
-}
-
-import MyProfile.api.*
-```
-
-#### `semiflatMap`
-
-Applies `f` to `Right` values, short-circuits on `Left`:
-
-```scala
-val action: DBIOAction[Either[MyError, User], NoStream, Effect] = ???
-
-action.semiflatMap { user =>
-  userTable.filter(_.id === user.id).update(user)
-}
-// DBIOAction[Either[MyError, Int], NoStream, Effect]
-```
-
-#### `subflatMap`
-
-Maps `Right` values with a pure `Either`-returning function:
-
-```scala
-action.subflatMap { user =>
-  if (user.isActive) Right(user) else Left(InactiveUserError)
-}
-```
-
-#### `flatMapF`
-
-Chains with another `DBIOAction[Either[...], ...]`:
-
-```scala
-action.flatMapF { user =>
-  findProfile(user.id) // DBIOAction[Either[MyError, Profile], ...]
-}
-```
-
-#### `right`
-
-Extracts `Right` when `Left` is `Nothing`:
-
-```scala
-val infallible: DBIOAction[Either[Nothing, User], NoStream, Effect] = ???
-infallible.right // DBIOAction[User, NoStream, Effect]
-```
-
-#### `rollbackOnLeft`
-
-Wraps the action in a transaction that rolls back on `Left` while preserving the `Left` value:
-
-```scala
-action.rollbackOnLeft.transactionally
-// DBIOAction[Either[MyError, User], NoStream, Effect & Effect.Transactional]
-```
-
 ## diffact-zio-slick
 
 Combines ZPure state-diff with Slick, allowing you to run pure state machines within database transactions.
@@ -422,10 +353,9 @@ Combines ZPure state-diff with Slick, allowing you to run pure state machines wi
 import diffact.slick.*
 
 object MyProfile extends slick.jdbc.PostgresProfile
-  with DifferSlickComponent
-  with EitherDBIOComponent
-  with ZPureDifferSlickComponent {
-  object api extends JdbcAPI with DifferSlickApi with EitherDBIOApi with ZPureDifferSlickApi
+  with DifferComponent
+  with ZPureDifferComponent {
+  object api extends JdbcAPI with DifferApi with ZPureDifferApi
 }
 
 import MyProfile.api.*

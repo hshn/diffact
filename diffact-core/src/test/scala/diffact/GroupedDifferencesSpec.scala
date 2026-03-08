@@ -1,8 +1,9 @@
 package diffact
 
-import diffact.GroupedDifferences.*
 import zio.Scope
 import zio.test.*
+
+import diffact.GroupedDifferences.*
 
 object GroupedDifferencesSpec extends ZIOSpecDefault {
   override def spec: Spec[TestEnvironment & Scope, Any] = suiteAll("GroupedDifferences") {

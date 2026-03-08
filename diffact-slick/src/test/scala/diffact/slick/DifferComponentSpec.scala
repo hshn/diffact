@@ -1,18 +1,20 @@
 package diffact.slick
 
+import zio.Scope
+import zio.test.*
+
 import cats.implicits.*
 import cats.kernel.Monoid
+
 import diffact.Difference
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
-import zio.Scope
-import zio.test.*
 
-object DifferSlickComponentSpec extends ZIOSpecDefault {
+object DifferComponentSpec extends ZIOSpecDefault {
 
-  object TestProfile extends _root_.slick.jdbc.H2Profile with DifferSlickComponent {
-    object TestApi extends JdbcAPI with DifferSlickApi
+  object TestProfile extends _root_.slick.jdbc.H2Profile with DifferComponent {
+    object TestApi extends JdbcAPI with DifferApi
   }
   import TestProfile.TestApi.*
 
@@ -21,7 +23,7 @@ object DifferSlickComponentSpec extends ZIOSpecDefault {
   private def run[R](action: DBIO[R]): R =
     Await.result(db.run(action), Duration(5, "seconds"))
 
-  override def spec: Spec[TestEnvironment & Scope, Any] = suiteAll("DifferSlickComponent") {
+  override def spec: Spec[TestEnvironment & Scope, Any] = suiteAll("DifferComponent") {
     suiteAll("Difference[A].sync") {
       test("dispatches Added to add handler") {
         val diff: Difference[Int] = Difference.Added(1)

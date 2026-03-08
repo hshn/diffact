@@ -7,10 +7,10 @@ import zio.*
 import zio.prelude.fx.ZPure
 import zio.test.*
 
-object ZPureDifferSlickComponentSpec extends ZIOSpecDefault {
+object DifferZPureComponentSpec extends ZIOSpecDefault {
 
-  object TestProfile extends _root_.slick.jdbc.H2Profile with ZPureDifferSlickComponent {
-    object TestApi extends JdbcAPI with ZPureDifferSlickApi
+  object TestProfile extends _root_.slick.jdbc.H2Profile with DifferZPureComponent {
+    object TestApi extends JdbcAPI with DifferZPureApi
   }
   import TestProfile.TestApi.*
 
@@ -19,7 +19,7 @@ object ZPureDifferSlickComponentSpec extends ZIOSpecDefault {
   private def run[R](action: DBIO[R]): R =
     Await.result(db.run(action), Duration(5, "seconds"))
 
-  override def spec: Spec[TestEnvironment & Scope, Any] = suiteAll("ZPureDifferSlickComponent") {
+  override def spec: Spec[TestEnvironment & Scope, Any] = suiteAll("DifferZPureComponent") {
     suiteAll("runAllStateAsDBIO") {
       test("wraps successful result in DBIO") {
         val zpure  = ZPure.update[Int, Int](_ => 2).map(_ => "result")

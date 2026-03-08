@@ -270,13 +270,13 @@ Slick integration for synchronizing differences to a database via `DBIOAction`.
 
 ### Setup
 
-Mix `DifferSlickComponent` into your Slick profile:
+Mix `DifferComponent` into your Slick profile:
 
 ```scala
 import diffact.slick.*
 
-object MyProfile extends slick.jdbc.PostgresProfile with DifferSlickComponent {
-  object api extends JdbcAPI with DifferSlickApi
+object MyProfile extends slick.jdbc.PostgresProfile with DifferComponent {
+  object api extends JdbcAPI with DifferApi
 }
 
 import MyProfile.api.*
@@ -353,9 +353,9 @@ Combines ZPure state-diff with Slick, allowing you to run pure state machines wi
 import diffact.slick.*
 
 object MyProfile extends slick.jdbc.PostgresProfile
-  with DifferSlickComponent
-  with ZPureDifferSlickComponent {
-  object api extends JdbcAPI with DifferSlickApi with ZPureDifferSlickApi
+  with DifferComponent
+  with ZPureDifferComponent {
+  object api extends JdbcAPI with DifferApi with ZPureDifferApi
 }
 
 import MyProfile.api.*

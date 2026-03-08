@@ -4,8 +4,8 @@ import diffact.*
 import zio.Chunk
 import zio.prelude.fx.ZPure
 
-trait ZPureDifferSlickComponent { self: _root_.slick.jdbc.JdbcProfile =>
-  trait ZPureDifferSlickApi { api: JdbcAPI =>
+trait DifferZPureComponent { self: _root_.slick.jdbc.JdbcProfile =>
+  trait DifferZPureApi { api: JdbcAPI =>
 
     extension [W, S1, S2, R, E, A](zpure: ZPure[W, S1, S2, R, E, A]) {
       def runAllStateAsDBIO(

@@ -6,8 +6,8 @@ import cats.kernel.Monoid
 import diffact.*
 import scala.concurrent.ExecutionContext
 
-trait DifferSlickComponent { self: _root_.slick.jdbc.JdbcProfile =>
-  trait DifferSlickApi { api: JdbcAPI =>
+trait DifferComponent { self: _root_.slick.jdbc.JdbcProfile =>
+  trait DifferApi { api: JdbcAPI =>
 
     extension [A](diff: Difference[A]) {
       def sync[R](

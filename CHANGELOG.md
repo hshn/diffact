@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/hshn/diffact/compare/v0.4.0...v0.5.0) (2026-03-09)
+
+
+### Features
+
+* add Scala 3.3 LTS support ([#37](https://github.com/hshn/diffact/issues/37)) ([6300149](https://github.com/hshn/diffact/commit/63001497f99f17e560933253f5e9b696bc0e8f1a))
+
 ## [0.4.0](https://github.com/hshn/diffact/compare/v0.3.0...v0.4.0) (2026-03-08)
 
 

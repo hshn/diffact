@@ -21,8 +21,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         java: ["21", "25"]
+        scala: ["3.3.7", "3.8.1"]
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-java@v5
@@ -31,7 +33,7 @@ jobs:
           java-version: ${{ matrix.java }}
           cache: sbt
       - uses: sbt/setup-sbt@v1
-      - run: sbt test
+      - run: sbt "++${{ matrix.scala }}!" test
 
   test-all:
     if: always()

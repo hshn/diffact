@@ -8,8 +8,12 @@ import zio.test.assertTrue
 
 object TrackedValueOptionDifferSpec extends ZIOSpecDefault {
   override def spec: Spec[TestEnvironment & Scope, Any] = suiteAll("OptionDiffer with TrackedValueDiffer") {
-    val differ: OptionDiffer[Plan] = ValueDiffer[Plan].trackBy(_.id).toOption
+    val differ: OptionDiffer[Plan, Seq[Difference[Plan]]] = ValueDiffer[Plan].trackBy(_.id).toOption
 
+    test("DiffResult is statically typed as Seq[Difference[Plan]]") {
+      val diffs: Seq[Difference[Plan]] = differ.diff(Some(Plan("p1", "Basic")), Some(Plan("p1", "Pro")))
+      assertTrue(diffs.headOption == Some(Difference.Changed(oldValue = Plan("p1", "Basic"), newValue = Plan("p1", "Pro"))))
+    }
     test("returns Changed when values differ with same identity") {
       assertTrue(
         differ.diff(Some(Plan("p1", "Basic")), Some(Plan("p1", "Pro"))) == Seq(

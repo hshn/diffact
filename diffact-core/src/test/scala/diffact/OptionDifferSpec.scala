@@ -28,20 +28,26 @@ object OptionDifferSpec extends ZIOSpecDefault {
         assertTrue(sameOne, sameTwo, bothNone)
       }
     }
+    suiteAll("given instance") {
+      test("resolves OptionDiffer with concrete DiffResult type") {
+        val differ: OptionDiffer[Int, Option[Difference[Int]]] = summon
+        assertTrue(differ.diff(Some(1), Some(2)) == Some(Difference.Changed(1, 2)))
+      }
+    }
     suiteAll("added / removed / none") {
       test("added(Some)") {
-        val differ = summon[OptionDiffer[Int]]
+        val differ = ValueDiffer[Int].toOption
         assertTrue(
           differ.added(Some(1)) == Some(Difference.Added(1))
         )
       }
       test("added(None)") {
-        val differ  = summon[OptionDiffer[Int]]
+        val differ  = ValueDiffer[Int].toOption
         val isEmpty = differ.added(None).equals(None)
         assertTrue(isEmpty)
       }
       test("removed") {
-        val differ      = summon[OptionDiffer[Int]]
+        val differ      = ValueDiffer[Int].toOption
         val noneIsEmpty = differ.removed(None).equals(None)
         assertTrue(
           differ.removed(Some(1)) == Some(Difference.Removed(1)),
@@ -49,7 +55,7 @@ object OptionDifferSpec extends ZIOSpecDefault {
         )
       }
       test("none") {
-        val differ  = summon[OptionDiffer[Int]]
+        val differ  = ValueDiffer[Int].toOption
         val isEmpty = differ.none.equals(None)
         assertTrue(isEmpty)
       }

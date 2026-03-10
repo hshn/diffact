@@ -30,38 +30,35 @@ lazy val diffactZio = (project in file("diffact-zio"))
   .settings(
     name := "diffact-zio",
     libraryDependencies ++= Seq(
-      "dev.zio"       %% "zio-prelude"  % "1.0.0-RC45",
-      "org.typelevel" %% "cats-core"    % "2.13.0",
-      "dev.zio"       %% "zio-test"     % zioVersion % Test,
-      "dev.zio"       %% "zio-test-sbt" % zioVersion % Test,
+      "dev.zio"       %% "zio-prelude" % "1.0.0-RC45",
+      "org.typelevel" %% "cats-core"   % "2.13.0",
     ),
     testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework"),
   )
-  .dependsOn(diffactCore)
+  .dependsOn(
+    diffactCore % "test->test;compile->compile"
+  )
 
 lazy val diffactSlick = (project in file("diffact-slick"))
   .settings(
     name := "diffact-slick",
     libraryDependencies ++= Seq(
-      "com.typesafe.slick" %% "slick"        % "3.6.1",
-      "org.typelevel"      %% "cats-core"    % "2.13.0",
-      "dev.zio"            %% "zio-test"     % zioVersion % Test,
-      "dev.zio"            %% "zio-test-sbt" % zioVersion % Test,
-      "com.h2database"      % "h2"           % "2.2.224"  % Test,
+      "com.typesafe.slick" %% "slick"     % "3.6.1",
+      "org.typelevel"      %% "cats-core" % "2.13.0",
+      "com.h2database"      % "h2"        % "2.2.224" % Test,
     ),
     testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework"),
   )
-  .dependsOn(diffactCore)
+  .dependsOn(
+    diffactCore % "test->test;compile->compile"
+  )
 
 lazy val diffactZioSlick = (project in file("diffact-zio-slick"))
   .settings(
     name := "diffact-zio-slick",
-    libraryDependencies ++= Seq(
-      "com.typesafe.slick" %% "slick"        % "3.6.1",
-      "dev.zio"            %% "zio-test"     % zioVersion % Test,
-      "dev.zio"            %% "zio-test-sbt" % zioVersion % Test,
-      "com.h2database"      % "h2"           % "2.2.224"  % Test,
-    ),
     testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework"),
   )
-  .dependsOn(diffactZio)
+  .dependsOn(
+    diffactZio   % "test->test;compile->compile",
+    diffactSlick % "test->test;compile->compile",
+  )

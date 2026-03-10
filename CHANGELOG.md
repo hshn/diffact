@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/hshn/diffact/compare/v0.5.0...v0.6.0) (2026-03-10)
+
+
+### Features
+
+* add type parameter to OptionDiffer for type-safe DiffResult ([#39](https://github.com/hshn/diffact/issues/39)) ([25af3d0](https://github.com/hshn/diffact/commit/25af3d09ef4d9290aab37fd8dc341662b7e5113c))
+
 ## [0.5.0](https://github.com/hshn/diffact/compare/v0.4.0...v0.5.0) (2026-03-09)
 
 

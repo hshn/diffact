@@ -1,7 +1,7 @@
 package diffact
 
-case class OptionDiffer[A](differ: Differ[A]) extends Differ[Option[A]] {
-  override type DiffResult = differ.DiffResult
+class OptionDiffer[A, D] private[diffact] (private[diffact] val differ: Differ[A] { type DiffResult = D }) extends Differ[Option[A]] {
+  override type DiffResult = D
 
   override def diff(oldValue: Option[A], newValue: Option[A]): DiffResult =
     (oldValue, newValue) match {
@@ -14,4 +14,9 @@ case class OptionDiffer[A](differ: Differ[A]) extends Differ[Option[A]] {
   override def added(newValue: Option[A]): DiffResult   = newValue.fold(differ.none)(differ.added)
   override def removed(oldValue: Option[A]): DiffResult = oldValue.fold(differ.none)(differ.removed)
   override def none: DiffResult                         = differ.none
+}
+
+object OptionDiffer {
+  def apply[A](differ: Differ[A]): OptionDiffer[A, differ.DiffResult] =
+    new OptionDiffer[A, differ.DiffResult](differ)
 }

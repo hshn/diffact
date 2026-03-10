@@ -15,7 +15,7 @@ object DifferComponentSpec extends SlickZIOSpec("test") {
   }
   import TestProfile.TestApi.*
 
-  override def spec: Spec[TestEnvironment & Scope, Any] = suiteAll("DifferComponent") {
+  override def spec = suiteAll("DifferComponent") {
     suiteAll("Difference[A].sync") {
       test("dispatches Added to add handler") {
         val diff: Difference[Int] = Difference.Added(1)

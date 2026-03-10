@@ -16,7 +16,7 @@ object DifferZPureComponentSpec extends SlickZIOSpec("test2") {
   }
   import TestProfile.TestApi.*
 
-  override def spec: Spec[TestEnvironment & Scope, Any] = suiteAll("DifferZPureComponent") {
+  override def spec = suiteAll("DifferZPureComponent") {
     suiteAll("runAllStateAsDBIO") {
       test("wraps successful result in DBIO") {
         val zpure = ZPure.update[Int, Int](_ => 2).map(_ => "result")

@@ -1,6 +1,6 @@
 package diffact
 
-case class OptionDiffer[A, D] private[diffact] (differ: Differ[A] { type DiffResult = D }) extends Differ[Option[A]] {
+class OptionDiffer[A, D] private[diffact] (private[diffact] val differ: Differ[A] { type DiffResult = D }) extends Differ[Option[A]] {
   override type DiffResult = D
 
   override def diff(oldValue: Option[A], newValue: Option[A]): DiffResult =
@@ -17,7 +17,6 @@ case class OptionDiffer[A, D] private[diffact] (differ: Differ[A] { type DiffRes
 }
 
 object OptionDiffer {
-  @scala.annotation.targetName("fromDiffer")
   def apply[A](differ: Differ[A]): OptionDiffer[A, differ.DiffResult] =
     new OptionDiffer[A, differ.DiffResult](differ)
 }

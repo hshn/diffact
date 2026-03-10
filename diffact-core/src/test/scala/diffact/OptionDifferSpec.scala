@@ -33,6 +33,18 @@ object OptionDifferSpec extends ZIOSpecDefault {
         val differ: OptionDiffer[Int, Option[Difference[Int]]] = summon
         assertTrue(differ.diff(Some(1), Some(2)) == Some(Difference.Changed(1, 2)))
       }
+      test("resolves via Differ[Option[Int]]") {
+        val differ                    = summon[Differ[Option[Int]]]
+        val result: differ.DiffResult = differ.diff(Some(1), Some(2))
+        assertTrue(result == Some(Difference.Changed(1, 2)))
+      }
+    }
+    suiteAll("nested toOption") {
+      test("composes OptionDiffer[Option[Int]]") {
+        val differ                          = ValueDiffer[Int].toOption.toOption
+        val result: Option[Difference[Int]] = differ.diff(Some(Some(1)), Some(Some(2)))
+        assertTrue(result == Some(Difference.Changed(1, 2)))
+      }
     }
     suiteAll("added / removed / none") {
       test("added(Some)") {

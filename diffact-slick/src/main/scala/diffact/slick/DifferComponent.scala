@@ -60,10 +60,10 @@ trait DifferComponent { self: JdbcProfile =>
         remove: Difference.Removed[A] => DBIOAction[R, NoStream, Effect.Write],
         change: Difference.Changed[A] => DBIOAction[R, NoStream, Effect.Write],
       )(using ExecutionContext): DBIOAction[R, NoStream, Effect.Write] = diff match {
-        case Difference.Tracked.Unchanged                    => DBIO.successful(Monoid[R].empty)
-        case Difference.Tracked.Added(value)                 => add(Difference.Added(value))
-        case Difference.Tracked.Removed(value)               => remove(Difference.Removed(value))
-        case Difference.Tracked.Changed(oldValue, newValue)  => change(Difference.Changed(oldValue, newValue))
+        case Difference.Tracked.Unchanged                          => DBIO.successful(Monoid[R].empty)
+        case Difference.Tracked.Added(value)                       => add(Difference.Added(value))
+        case Difference.Tracked.Removed(value)                     => remove(Difference.Removed(value))
+        case Difference.Tracked.Changed(oldValue, newValue)        => change(Difference.Changed(oldValue, newValue))
         case Difference.Tracked.Replaced(removedValue, addedValue) =>
           for {
             r1 <- remove(Difference.Removed(removedValue))

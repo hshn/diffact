@@ -115,15 +115,15 @@ val differ = ValueDiffer[Plan].trackBy(_.id)
 
 // Same identity, different value → Changed
 differ.diff(Plan("p1", "Basic"), Plan("p1", "Pro"))
-// Tracked.Changed(oldValue = Plan("p1", "Basic"), newValue = Plan("p1", "Pro"))
+// Difference.Tracked.Changed(oldValue = Plan("p1", "Basic"), newValue = Plan("p1", "Pro"))
 
 // Different identity → Replaced
 differ.diff(Plan("p1", "Basic"), Plan("p2", "Enterprise"))
-// Tracked.Replaced(removedValue = Plan("p1", "Basic"), addedValue = Plan("p2", "Enterprise"))
+// Difference.Tracked.Replaced(removedValue = Plan("p1", "Basic"), addedValue = Plan("p2", "Enterprise"))
 
 // Same identity, same value → Unchanged
 differ.diff(Plan("p1", "Basic"), Plan("p1", "Basic"))
-// Tracked.Unchanged
+// Difference.Tracked.Unchanged
 ```
 
 A `TrackedValueDiffer` can be lifted to a `SeqDiffer` via `toSeq`:

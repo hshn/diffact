@@ -63,6 +63,33 @@ object DifferenceShowSpec extends ZIOSpecDefault {
         )
       }
     }
+    suiteAll("Tracked[Difference].show") {
+      test("Unchanged") {
+        assertTrue(
+          (Difference.Tracked.Unchanged: Difference.Tracked[Int]).show == "(no change)"
+        )
+      }
+      test("Added") {
+        assertTrue(
+          Difference.Tracked.Added(1).show == "+1"
+        )
+      }
+      test("Removed") {
+        assertTrue(
+          Difference.Tracked.Removed(2).show == "-2"
+        )
+      }
+      test("Changed") {
+        assertTrue(
+          Difference.Tracked.Changed(1, 2).show == "1 → 2"
+        )
+      }
+      test("Replaced") {
+        assertTrue(
+          Difference.Tracked.Replaced(1, 2).show == "-1\n+2"
+        )
+      }
+    }
     suiteAll("custom Show instance") {
       given Show[Int] with {
         def show(value: Int): String = s"#$value"

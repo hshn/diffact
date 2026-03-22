@@ -13,37 +13,34 @@ object TrackedValueDifferSpec extends ZIOSpecDefault {
 
       test("returns Changed when values differ with same identity") {
         assertTrue(
-          differ.diff(Plan("p1", "Basic"), Plan("p1", "Pro")) == Seq(
-            Difference.Changed(oldValue = Plan("p1", "Basic"), newValue = Plan("p1", "Pro"))
-          )
+          differ.diff(Plan("p1", "Basic"), Plan("p1", "Pro")) ==
+            Difference.Tracked.Changed(oldValue = Plan("p1", "Basic"), newValue = Plan("p1", "Pro"))
         )
       }
-      test("returns no difference when values are equal with same identity") {
+      test("returns Unchanged when values are equal with same identity") {
         assertTrue(
-          differ.diff(Plan("p1", "Basic"), Plan("p1", "Basic")).isEmpty
+          differ.diff(Plan("p1", "Basic"), Plan("p1", "Basic")) == Difference.Tracked.Unchanged
         )
       }
-      test("returns Removed and Added when identity differs") {
+      test("returns Replaced when identity differs") {
         assertTrue(
-          differ.diff(Plan("p1", "Basic"), Plan("p2", "Enterprise")) == Seq(
-            Difference.Removed(Plan("p1", "Basic")),
-            Difference.Added(Plan("p2", "Enterprise")),
-          )
+          differ.diff(Plan("p1", "Basic"), Plan("p2", "Enterprise")) ==
+            Difference.Tracked.Replaced(Plan("p1", "Basic"), Plan("p2", "Enterprise"))
         )
       }
       test("added") {
         assertTrue(
-          differ.added(Plan("p1", "Basic")) == Seq(Difference.Added(Plan("p1", "Basic")))
+          differ.added(Plan("p1", "Basic")) == Difference.Tracked.Added(Plan("p1", "Basic"))
         )
       }
       test("removed") {
         assertTrue(
-          differ.removed(Plan("p1", "Basic")) == Seq(Difference.Removed(Plan("p1", "Basic")))
+          differ.removed(Plan("p1", "Basic")) == Difference.Tracked.Removed(Plan("p1", "Basic"))
         )
       }
       test("none") {
         assertTrue(
-          differ.none.isEmpty
+          differ.none == Difference.Tracked.Unchanged
         )
       }
       test("converts to SeqDiffer via toSeq") {
@@ -60,18 +57,32 @@ object TrackedValueDifferSpec extends ZIOSpecDefault {
         )
       }
     }
+    suiteAll("toDifferences") {
+      test("Unchanged") {
+        assertTrue(
+          (Difference.Tracked.Unchanged: Difference.Tracked[Int]).toDifferences == Nil
+        )
+      }
+      test("Added") {
+        assertTrue(
+          Difference.Tracked.Added(1).toDifferences == Seq(Difference.Added(1))
+        )
+      }
+      test("Replaced") {
+        assertTrue(
+          Difference.Tracked.Replaced(1, 2).toDifferences == Seq(Difference.Removed(1), Difference.Added(2))
+        )
+      }
+    }
     suiteAll("fluent API") {
       given TrackedValueDiffer[Plan, String] = ValueDiffer[Plan].trackBy(_.id)
 
       test("resolves given instance via Differ.diff(x).from(y)") {
         assertTrue(
-          Differ.diff(Plan("p1", "Pro")).from(Plan("p1", "Basic")) == Seq(
-            Difference.Changed(oldValue = Plan("p1", "Basic"), newValue = Plan("p1", "Pro"))
-          ),
-          Differ.diff(Plan("p2", "Enterprise")).from(Plan("p1", "Basic")) == Seq(
-            Difference.Removed(Plan("p1", "Basic")),
-            Difference.Added(Plan("p2", "Enterprise")),
-          ),
+          Differ.diff(Plan("p1", "Pro")).from(Plan("p1", "Basic")) ==
+            Difference.Tracked.Changed(oldValue = Plan("p1", "Basic"), newValue = Plan("p1", "Pro")),
+          Differ.diff(Plan("p2", "Enterprise")).from(Plan("p1", "Basic")) ==
+            Difference.Tracked.Replaced(Plan("p1", "Basic"), Plan("p2", "Enterprise")),
         )
       }
     }

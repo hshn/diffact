@@ -17,21 +17,18 @@ object DifferenceChangedMapSpec extends ZIOSpecDefault {
           newValue = Parent("x", Plan("p1", "Pro")),
         )
         assertTrue(
-          diff.map(_.plan) == Seq(
-            Difference.Changed(oldValue = Plan("p1", "Basic"), newValue = Plan("p1", "Pro"))
-          )
+          diff.map(_.plan) ==
+            Difference.Tracked.Changed(oldValue = Plan("p1", "Basic"), newValue = Plan("p1", "Pro"))
         )
       }
-      test("returns Removed and Added when identity differs") {
+      test("returns Replaced when identity differs") {
         val diff = Difference.Changed(
           oldValue = Parent("x", Plan("p1", "Basic")),
           newValue = Parent("x", Plan("p2", "Enterprise")),
         )
         assertTrue(
-          diff.map(_.plan) == Seq(
-            Difference.Removed(Plan("p1", "Basic")),
-            Difference.Added(Plan("p2", "Enterprise")),
-          )
+          diff.map(_.plan) ==
+            Difference.Tracked.Replaced(Plan("p1", "Basic"), Plan("p2", "Enterprise"))
         )
       }
     }

@@ -54,6 +54,34 @@ trait DifferComponent { self: JdbcProfile =>
       )
     }
 
+    extension [A](diff: Difference.Tracked[A]) {
+      def sync[R: Monoid](
+        add: Difference.Added[A] => DBIOAction[R, NoStream, Effect.Write],
+        remove: Difference.Removed[A] => DBIOAction[R, NoStream, Effect.Write],
+        change: Difference.Changed[A] => DBIOAction[R, NoStream, Effect.Write],
+      )(using ExecutionContext): DBIOAction[R, NoStream, Effect.Write] = diff match {
+        case Difference.Tracked.Unchanged                          => DBIO.successful(Monoid[R].empty)
+        case Difference.Tracked.Added(value)                       => add(Difference.Added(value))
+        case Difference.Tracked.Removed(value)                     => remove(Difference.Removed(value))
+        case Difference.Tracked.Changed(oldValue, newValue)        => change(Difference.Changed(oldValue, newValue))
+        case Difference.Tracked.Replaced(removedValue, addedValue) =>
+          for {
+            r1 <- remove(Difference.Removed(removedValue))
+            r2 <- add(Difference.Added(addedValue))
+          } yield r1 |+| r2
+      }
+
+      def syncDiscard(
+        add: Difference.Added[A] => DBIOAction[Any, NoStream, Effect.Write],
+        remove: Difference.Removed[A] => DBIOAction[Any, NoStream, Effect.Write],
+        change: Difference.Changed[A] => DBIOAction[Any, NoStream, Effect.Write],
+      )(using ExecutionContext): DBIOAction[Unit, NoStream, Effect.Write] = diff.sync(
+        add = d => add(d).void,
+        remove = d => remove(d).void,
+        change = d => change(d).void,
+      )
+    }
+
     extension [A](diffs: Seq[Difference[A]]) {
       def sync[R: Monoid](
         add: NonEmptyList[Difference.Added[A]] => DBIOAction[R, NoStream, Effect.Write],

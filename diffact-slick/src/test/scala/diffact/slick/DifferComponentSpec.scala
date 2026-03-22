@@ -108,6 +108,82 @@ object DifferComponentSpec extends SlickZIOSpec("test") {
         }
       }
     }
+    suiteAll("Difference.Tracked[A].sync") {
+      test("returns Monoid.empty for Unchanged") {
+        val diff: Difference.Tracked[Int] = Difference.Tracked.Unchanged
+        run {
+          diff
+            .sync(
+              add = d => DBIO.successful(s"added:${d.value}"),
+              remove = d => DBIO.successful(s"removed:${d.value}"),
+              change = d => DBIO.successful(s"changed:${d.oldValue}->${d.newValue}"),
+            )
+            .map(result => assertTrue(result == ""))
+        }
+      }
+      test("dispatches Added to add handler") {
+        val diff: Difference.Tracked[Int] = Difference.Tracked.Added(1)
+        run {
+          diff
+            .sync(
+              add = d => DBIO.successful(s"added:${d.value}"),
+              remove = d => DBIO.successful(s"removed:${d.value}"),
+              change = d => DBIO.successful(s"changed:${d.oldValue}->${d.newValue}"),
+            )
+            .map(result => assertTrue(result == "added:1"))
+        }
+      }
+      test("dispatches Changed to change handler") {
+        val diff: Difference.Tracked[Int] = Difference.Tracked.Changed(1, 2)
+        run {
+          diff
+            .sync(
+              add = d => DBIO.successful(s"added:${d.value}"),
+              remove = d => DBIO.successful(s"removed:${d.value}"),
+              change = d => DBIO.successful(s"changed:${d.oldValue}->${d.newValue}"),
+            )
+            .map(result => assertTrue(result == "changed:1->2"))
+        }
+      }
+      test("dispatches Removed to remove handler") {
+        val diff: Difference.Tracked[Int] = Difference.Tracked.Removed(1)
+        run {
+          diff
+            .sync(
+              add = d => DBIO.successful(s"added:${d.value}"),
+              remove = d => DBIO.successful(s"removed:${d.value}"),
+              change = d => DBIO.successful(s"changed:${d.oldValue}->${d.newValue}"),
+            )
+            .map(result => assertTrue(result == "removed:1"))
+        }
+      }
+      test("dispatches Replaced to remove then add") {
+        val diff: Difference.Tracked[Int] = Difference.Tracked.Replaced(1, 2)
+        run {
+          diff
+            .sync(
+              add = d => DBIO.successful(s"added:${d.value}"),
+              remove = d => DBIO.successful(s"removed:${d.value}"),
+              change = d => DBIO.successful(s"changed:${d.oldValue}->${d.newValue}"),
+            )
+            .map(result => assertTrue(result == "removed:1added:2"))
+        }
+      }
+    }
+    suiteAll("Difference.Tracked[A].syncDiscard") {
+      test("returns Unit for Unchanged") {
+        val diff: Difference.Tracked[Int] = Difference.Tracked.Unchanged
+        run {
+          diff
+            .syncDiscard(
+              add = d => DBIO.successful(d.value),
+              remove = d => DBIO.successful(d.value),
+              change = d => DBIO.successful(d.oldValue),
+            )
+            .map(result => assertTrue(result == ()))
+        }
+      }
+    }
     suiteAll("Seq[Difference[A]].sync") {
       test("groups and dispatches differences") {
         val diffs: Seq[Difference[Int]] = Seq(

@@ -63,7 +63,7 @@ object DifferenceShowSpec extends ZIOSpecDefault {
         )
       }
     }
-    suiteAll("Tracked[Difference].show") {
+    suiteAll("Difference.Tracked.show") {
       test("Unchanged") {
         assertTrue(
           (Difference.Tracked.Unchanged: Difference.Tracked[Int]).show == "(no change)"

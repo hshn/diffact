@@ -17,14 +17,14 @@ trait DifferComponent { self: JdbcProfile =>
       change: Difference.Changed[A] => DBIOAction[RC, NoStream, Effect.Write],
     ) {
 
-      def apply(diff: Difference[A])(using RA =:= RR, RR =:= RC): DBIOAction[RA | RR | RC, NoStream, Effect.Write] =
+      def apply(diff: Difference[A])(using Eq3[RA, RR, RC]): DBIOAction[RA | RR | RC, NoStream, Effect.Write] =
         diff match {
           case d: Difference.Added[A]   => add(d)
           case d: Difference.Removed[A] => remove(d)
           case d: Difference.Changed[A] => change(d)
         }
 
-      def apply(diff: Option[Difference[A]])(using RA =:= RR, RR =:= RC, Monoid[RA]): DBIOAction[RA | RR | RC, NoStream, Effect.Write] =
+      def apply(diff: Option[Difference[A]])(using Eq3[RA, RR, RC], Monoid[RA]): DBIOAction[RA | RR | RC, NoStream, Effect.Write] =
         diff match {
           case Some(d) => this(d)
           case None    => DBIO.successful(Monoid[RA].empty)
@@ -32,7 +32,7 @@ trait DifferComponent { self: JdbcProfile =>
 
       def apply(
         diff: Difference.Tracked[A]
-      )(using ev1: RA =:= RR, ev2: RR =:= RC, m: Monoid[RA], ec: ExecutionContext): DBIOAction[RA | RR | RC, NoStream, Effect.Write] =
+      )(using eq: Eq3[RA, RR, RC], m: Monoid[RA], ec: ExecutionContext): DBIOAction[RA | RR | RC, NoStream, Effect.Write] =
         diff match {
           case Difference.Tracked.Unchanged                          => DBIO.successful(m.empty)
           case Difference.Tracked.Added(value)                       => add(Difference.Added(value))
@@ -42,22 +42,20 @@ trait DifferComponent { self: JdbcProfile =>
             for {
               r1 <- remove(Difference.Removed(removedValue))
               r2 <- add(Difference.Added(addedValue))
-            } yield m.combine(ev1.flip(r1), r2)
+            } yield m.combine(eq.toA(r1), r2)
         }
 
       def apply(
         diffs: Seq[Difference[A]]
-      )(using ev1: RA =:= RR, ev2: RR =:= RC, m: Monoid[RA], ec: ExecutionContext): DBIOAction[RA | RR | RC, NoStream, Effect.Write] = {
+      )(using eq: Eq3[RA, RR, RC], m: Monoid[RA], ec: ExecutionContext): DBIOAction[RA | RR | RC, NoStream, Effect.Write] = {
         val empty                                    = DBIO.successful(m.empty)
         val (maybeAdded, maybeRemoved, maybeChanged) = diffs.groupNelByType
-        val convertRR: RR => RA                      = ev1.flip(_)
-        val convertRC: RC => RA                      = r => ev1.flip(ev2.flip(r))
 
         for {
-          r1 <- maybeRemoved.fold(empty)(nel => DBIO.sequence(nel.toList.map(remove)).map(_.map(convertRR).combineAll))
+          r1 <- maybeRemoved.fold(empty)(nel => DBIO.sequence(nel.toList.map(remove)).map(_.foldMap(eq.toA)))
           r2 <- maybeAdded.fold(empty)(nel => DBIO.sequence(nel.toList.map(add)).map(_.combineAll))
-          r3 <- maybeChanged.fold(empty)(nel => DBIO.sequence(nel.toList.map(change)).map(_.map(convertRC).combineAll))
-        } yield m.combine(m.combine(r1, r2), r3)
+          r3 <- maybeChanged.fold(empty)(nel => DBIO.sequence(nel.toList.map(change)).map(_.foldMap(eq.toA)))
+        } yield r1 |+| r2 |+| r3
       }
 
       def void: Sync[A, Unit, Unit, Unit] = new Sync[A, Unit, Unit, Unit](

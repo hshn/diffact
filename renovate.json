@@ -1,0 +1,41 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base"
+  ],
+  "dependencyDashboard": false,
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["patch"],
+      "automerge": true
+    },
+    {
+      "matchUpdateTypes": ["minor"],
+      "automerge": true
+    },
+    {
+      "matchCurrentVersion": "< 1.0.0",
+      "matchUpdateTypes": ["minor"],
+      "automerge": false
+    },
+    {
+      "matchPackageNames": [
+        "dev.zio:zio",
+        "dev.zio:zio-test",
+        "dev.zio:zio-test-sbt",
+        "dev.zio:zio-test-magnolia"
+      ],
+      "groupName": "zio"
+    },
+    {
+      "matchManagers": ["devbox"],
+      "matchPackageNames": ["sbt"],
+      "enabled": false
+    },
+    {
+      "matchPackageNames": ["org.scala-lang:scala3-library_3"],
+      "allowedVersions": "/^3\\.3\\./",
+      "description": "Keep default Scala version on 3.3 LTS"
+    }
+  ]
+}

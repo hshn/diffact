@@ -45,20 +45,20 @@ object DifferZPureComponentSpec extends SlickZIOSpec("test2") {
         }
       }
     }
-    suiteAll("runAllStateAsDBIO + sync") {
+    suiteAll("runAllStateAsDBIO + Sync") {
+      val handler = Sync[Int]
+        .added(d => DBIO.successful(s"added:${d.value}"))
+        .removed(d => DBIO.successful(s"removed:${d.value}"))
+        .changed(d => DBIO.successful(s"changed:${d.oldValue}->${d.newValue}"))
+
       test("state change diffResult dispatches to change handler") {
         val zpure = ZPure.update[Int, Int](_ => 2).map(_ => "result")
         run {
           for {
             either <- zpure.runAllStateAsDBIO(1)
             result <- either match {
-              case Right((_, diffResult, _)) =>
-                diffResult.sync[String](
-                  add = d => DBIO.successful(s"added:${d.value}"),
-                  remove = d => DBIO.successful(s"removed:${d.value}"),
-                  change = d => DBIO.successful(s"changed:${d.oldValue}->${d.newValue}"),
-                )
-              case Left(_) => DBIO.successful("error")
+              case Right((_, diffResult, _)) => handler(diffResult)
+              case Left(_)                   => DBIO.successful("error")
             }
           } yield {
             assertTrue(result == "changed:1->2")
@@ -71,34 +71,22 @@ object DifferZPureComponentSpec extends SlickZIOSpec("test2") {
           for {
             either <- zpure.runAllStateAsDBIO(1)
             result <- either match {
-              case Right((_, diffResult, _)) =>
-                diffResult.sync[String](
-                  add = d => DBIO.successful(s"added:${d.value}"),
-                  remove = d => DBIO.successful(s"removed:${d.value}"),
-                  change = d => DBIO.successful(s"changed:${d.oldValue}->${d.newValue}"),
-                )
-              case Left(_) => DBIO.successful("error")
+              case Right((_, diffResult, _)) => handler(diffResult)
+              case Left(_)                   => DBIO.successful("error")
             }
           } yield {
             assertTrue(result == "")
           }
         }
       }
-    }
-    suiteAll("runAllStateAsDBIO + syncDiscard") {
-      test("state change diffResult returns Unit") {
+      test("state change diffResult returns Unit via void") {
         val zpure = ZPure.update[Int, Int](_ => 2).map(_ => "result")
         run {
           for {
             either <- zpure.runAllStateAsDBIO(1)
             result <- either match {
-              case Right((_, diffResult, _)) =>
-                diffResult.syncDiscard(
-                  add = _ => DBIO.successful(()),
-                  remove = _ => DBIO.successful(()),
-                  change = _ => DBIO.successful(()),
-                )
-              case Left(_) => DBIO.successful(())
+              case Right((_, diffResult, _)) => handler.void(diffResult)
+              case Left(_)                   => DBIO.successful(())
             }
           } yield {
             assertTrue(result == ())

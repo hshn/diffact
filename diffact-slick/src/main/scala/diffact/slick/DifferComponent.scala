@@ -1,139 +1,74 @@
 package diffact.slick
 
+import cats.Id
 import cats.data.NonEmptyList
 import cats.implicits.*
 import cats.kernel.Monoid
 import slick.jdbc.JdbcProfile
 
 import diffact.*
+import scala.annotation.implicitNotFound
 import scala.concurrent.ExecutionContext
 
 trait DifferComponent { self: JdbcProfile =>
   trait DifferApi { api: JdbcAPI =>
+    class Sync[A, RA, RR, RC, F[_]] private[diffact] (
+      add: F[Difference.Added[A]] => DBIOAction[RA, NoStream, Effect.Write],
+      remove: F[Difference.Removed[A]] => DBIOAction[RR, NoStream, Effect.Write],
+      change: F[Difference.Changed[A]] => DBIOAction[RC, NoStream, Effect.Write],
+    ) {
 
-    extension [A](diff: Difference[A]) {
-      def sync[R](
-        add: Difference.Added[A] => DBIOAction[R, NoStream, Effect.Write],
-        remove: Difference.Removed[A] => DBIOAction[R, NoStream, Effect.Write],
-        change: Difference.Changed[A] => DBIOAction[R, NoStream, Effect.Write],
-      ): DBIOAction[R, NoStream, Effect.Write] = diff match {
-        case added: Difference.Added[A]     => add(added)
-        case removed: Difference.Removed[A] => remove(removed)
-        case changed: Difference.Changed[A] => change(changed)
-      }
-
-      def syncDiscard(
-        add: Difference.Added[A] => DBIOAction[Any, NoStream, Effect.Write],
-        remove: Difference.Removed[A] => DBIOAction[Any, NoStream, Effect.Write],
-        change: Difference.Changed[A] => DBIOAction[Any, NoStream, Effect.Write],
-      ): DBIOAction[Unit, NoStream, Effect.Write] = diff.sync(
-        add = diff => add(diff).void,
-        remove = diff => remove(diff).void,
-        change = diff => change(diff).void,
-      )
-    }
-
-    extension [A](diff: Option[Difference[A]]) {
-      def sync[R: Monoid](
-        add: Difference.Added[A] => DBIOAction[R, NoStream, Effect.Write],
-        remove: Difference.Removed[A] => DBIOAction[R, NoStream, Effect.Write],
-        change: Difference.Changed[A] => DBIOAction[R, NoStream, Effect.Write],
-      ): DBIOAction[R, NoStream, Effect.Write] = diff match {
-        case Some(diff) => diff.sync(add = add, remove = remove, change = change)
-        case None       => DBIO.successful(Monoid[R].empty)
-      }
-
-      def syncDiscard(
-        add: Difference.Added[A] => DBIOAction[Any, NoStream, Effect.Write],
-        remove: Difference.Removed[A] => DBIOAction[Any, NoStream, Effect.Write],
-        change: Difference.Changed[A] => DBIOAction[Any, NoStream, Effect.Write],
-      ): DBIOAction[Unit, NoStream, Effect.Write] = diff.sync(
-        add = diff => add(diff).void,
-        remove = diff => remove(diff).void,
-        change = diff => change(diff).void,
-      )
-    }
-
-    extension [A](diff: Difference.Tracked[A]) {
-      def sync[R: Monoid](
-        add: Difference.Added[A] => DBIOAction[R, NoStream, Effect.Write],
-        remove: Difference.Removed[A] => DBIOAction[R, NoStream, Effect.Write],
-        change: Difference.Changed[A] => DBIOAction[R, NoStream, Effect.Write],
-      )(using ExecutionContext): DBIOAction[R, NoStream, Effect.Write] = diff match {
-        case Difference.Tracked.Unchanged                          => DBIO.successful(Monoid[R].empty)
-        case Difference.Tracked.Added(value)                       => add(Difference.Added(value))
-        case Difference.Tracked.Removed(value)                     => remove(Difference.Removed(value))
-        case Difference.Tracked.Changed(oldValue, newValue)        => change(Difference.Changed(oldValue, newValue))
-        case Difference.Tracked.Replaced(removedValue, addedValue) =>
-          for {
-            r1 <- remove(Difference.Removed(removedValue))
-            r2 <- add(Difference.Added(addedValue))
-          } yield r1 |+| r2
-      }
-
-      def syncDiscard(
-        add: Difference.Added[A] => DBIOAction[Any, NoStream, Effect.Write],
-        remove: Difference.Removed[A] => DBIOAction[Any, NoStream, Effect.Write],
-        change: Difference.Changed[A] => DBIOAction[Any, NoStream, Effect.Write],
-      )(using ExecutionContext): DBIOAction[Unit, NoStream, Effect.Write] = diff.sync(
-        add = d => add(d).void,
-        remove = d => remove(d).void,
-        change = d => change(d).void,
-      )
-    }
-
-    extension [A](diffs: Seq[Difference[A]]) {
-      def sync[R: Monoid](
-        add: NonEmptyList[Difference.Added[A]] => DBIOAction[R, NoStream, Effect.Write],
-        remove: NonEmptyList[Difference.Removed[A]] => DBIOAction[R, NoStream, Effect.Write],
-        change: NonEmptyList[Difference.Changed[A]] => DBIOAction[R, NoStream, Effect.Write],
-      )(using ExecutionContext): DBIOAction[R, NoStream, Effect.Write] = {
-        val empty                                    = DBIO.successful(Monoid[R].empty)
-        val (maybeAdded, maybeRemoved, maybeChanged) = diffs.groupNelByType
-
-        for {
-          r1 <- maybeRemoved.map(remove).getOrElse(empty)
-          r2 <- maybeAdded.map(add).getOrElse(empty)
-          r3 <- maybeChanged.map(change).getOrElse(empty)
-        } yield {
-          r1 |+| r2 |+| r3
-        }
-      }
-
-      def syncDiscard(
-        add: NonEmptyList[Difference.Added[A]] => DBIOAction[Any, NoStream, Effect.Write],
-        remove: NonEmptyList[Difference.Removed[A]] => DBIOAction[Any, NoStream, Effect.Write],
-        change: NonEmptyList[Difference.Changed[A]] => DBIOAction[Any, NoStream, Effect.Write],
-      )(using ExecutionContext): DBIOAction[Unit, NoStream, Effect.Write] = {
-        sync(
-          add = diffs => add(diffs).void,
-          remove = diffs => remove(diffs).void,
-          change = diffs => change(diffs).void,
+      def apply[D](d: D)(using
+        @implicitNotFound(
+          "Cannot dispatch ${D} through Sync handlers. " +
+            "Supported diff types — Sync[A]: Difference[A], Option[Difference[A]], Difference.Tracked[A], Seq[Difference[A]]; Sync.batchSeq[A] / Sync.batchNel[A]: Seq[Difference[A]]."
         )
-      }
-
-      def syncEach[R: Monoid](
-        add: Difference.Added[A] => DBIOAction[R, NoStream, Effect.Write],
-        remove: Difference.Removed[A] => DBIOAction[R, NoStream, Effect.Write],
-        change: Difference.Changed[A] => DBIOAction[R, NoStream, Effect.Write],
-      )(using ExecutionContext): DBIOAction[R, NoStream, Effect.Write] =
-        sync(
-          add = nel => DBIO.sequence(nel.toList.map(add)).map(_.combineAll),
-          remove = nel => DBIO.sequence(nel.toList.map(remove)).map(_.combineAll),
-          change = nel => DBIO.sequence(nel.toList.map(change)).map(_.combineAll),
+        s: Syncable[D, A, F],
+        @implicitNotFound(
+          "Handler return types must be identical to call Sync#apply directly. " +
+            "Use .void to discard results, or ensure all handlers return the same type."
+        )
+        eq: Eq3[RA, RR, RC],
+        m: Monoid[RA],
+        ec: ExecutionContext,
+      ): DBIOAction[RA | RR | RC, NoStream, Effect.Write] =
+        s.sync[RA](d)(
+          add = this.add(_),
+          remove = r => this.remove(r).map(eq.toA(_)),
+          change = c => this.change(c).map(eq.toA(_)),
         )
 
-      def syncEachDiscard(
-        add: Difference.Added[A] => DBIOAction[Any, NoStream, Effect.Write],
-        remove: Difference.Removed[A] => DBIOAction[Any, NoStream, Effect.Write],
-        change: Difference.Changed[A] => DBIOAction[Any, NoStream, Effect.Write],
-      )(using ExecutionContext): DBIOAction[Unit, NoStream, Effect.Write] =
-        syncEach(
-          add = d => add(d).void,
-          remove = d => remove(d).void,
-          change = d => change(d).void,
-        )
+      def void: Sync[A, Unit, Unit, Unit, F] = new Sync[A, Unit, Unit, Unit, F](
+        add = v => this.add(v).void,
+        remove = v => this.remove(v).void,
+        change = v => this.change(v).void,
+      )
+
+      def added[RA1](f: F[Difference.Added[A]] => DBIOAction[RA1, NoStream, Effect.Write]): Sync[A, RA1, RR, RC, F] =
+        new Sync[A, RA1, RR, RC, F](add = f, remove = this.remove, change = this.change)
+
+      def removed[RR1](f: F[Difference.Removed[A]] => DBIOAction[RR1, NoStream, Effect.Write]): Sync[A, RA, RR1, RC, F] =
+        new Sync[A, RA, RR1, RC, F](add = this.add, remove = f, change = this.change)
+
+      def changed[RC1](f: F[Difference.Changed[A]] => DBIOAction[RC1, NoStream, Effect.Write]): Sync[A, RA, RR, RC1, F] =
+        new Sync[A, RA, RR, RC1, F](add = this.add, remove = this.remove, change = f)
     }
 
+    object Sync {
+      def apply[A]: Sync[A, Nothing, Nothing, Nothing, Id] = new Sync[A, Nothing, Nothing, Nothing, Id](
+        add = _ => DBIO.failed(new IllegalStateException("No Sync handler for Added")),
+        remove = _ => DBIO.failed(new IllegalStateException("No Sync handler for Removed")),
+        change = _ => DBIO.failed(new IllegalStateException("No Sync handler for Changed")),
+      )
+
+      def batch[F[_], A]: Sync[A, Nothing, Nothing, Nothing, F] = new Sync[A, Nothing, Nothing, Nothing, F](
+        add = _ => DBIO.failed(new IllegalStateException("No SyncBatch handler for Added")),
+        remove = _ => DBIO.failed(new IllegalStateException("No SyncBatch handler for Removed")),
+        change = _ => DBIO.failed(new IllegalStateException("No SyncBatch handler for Changed")),
+      )
+
+      def batchSeq[A]: Sync[A, Nothing, Nothing, Nothing, Seq]          = batch[Seq, A]
+      def batchNel[A]: Sync[A, Nothing, Nothing, Nothing, NonEmptyList] = batch[NonEmptyList, A]
+    }
   }
 }

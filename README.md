@@ -211,49 +211,71 @@ object MyProfile extends slick.jdbc.PostgresProfile with DifferComponent {
 import MyProfile.api.*
 ```
 
-### sync
+### Sync
 
-Every diff result type has a `.sync` method that dispatches to typed handlers:
+`Sync` is a builder for declaratively registering per-handler dispatch logic:
 
 ```scala
-// Single value diff (ValueDiffer → Option[Difference[A]])
+val handler = Sync[User]
+  .added(d => userTable += d.value)
+  .removed(d => userTable.filter(_.id === d.value.id).delete)
+  .changed(d => userTable.filter(_.id === d.oldValue.id).update(d.newValue))
+```
+
+Dispatch to the appropriate handler based on the diff type:
+
+```scala
+// Option[Difference[A]] — from ValueDiffer
 val diff: Option[Difference[User]] = Differ.diff(newUser).from(oldUser)
+handler(diff)
 
-diff.sync(
-  add    = d => userTable += d.value,
-  remove = d => userTable.filter(_.id === d.value.id).delete,
-  change = d => userTable.filter(_.id === d.oldValue.id).update(d.newValue),
-)
-```
-
-```scala
-// Tracked value diff (TrackedValueDiffer → Difference.Tracked[A])
-val diff: Difference.Tracked[Plan] = planDiffer.diff(oldPlan, newPlan)
-
-diff.sync(
-  add    = d => planTable += d.value,
-  remove = d => planTable.filter(_.id === d.value.id).delete,
-  change = d => planTable.filter(_.id === d.oldValue.id).update(d.newValue),
-)
+// Difference.Tracked[A] — from TrackedValueDiffer
 // Replaced is automatically handled as remove → add
+val tracked: Difference.Tracked[Plan] = planDiffer.diff(oldPlan, newPlan)
+handler(tracked)
+
+// Seq[Difference[A]] — from SeqDiffer (per-element dispatch)
+val diffs: Seq[Difference[Item]] = Differ.diff(newItems).from(oldItems)
+handler(diffs)
 ```
+
+Use `void` to unify return types when handlers return different types, or when you only need a subset of handlers:
 
 ```scala
-// Collection diff (SeqDiffer → Seq[Difference[A]])
-val diffs: Seq[Difference[Item]] = Differ.diff(newItems).from(oldItems)
+// Only handle changes — Added/Removed will fail at runtime
+val changeOnly = Sync[User]
+  .changed(d => userTable.filter(_.id === d.oldValue.id).update(d.newValue))
+  .void
 
-diffs.sync(
-  add    = ds => itemTable ++= ds.toList.map(_.value),
-  remove = ds => itemTable.filter(_.id inSet ds.toList.map(_.value.id)).delete,
-  change = ds => DBIO.sequence(ds.toList.map(d =>
-    itemTable.filter(_.id === d.oldValue.id).update(d.newValue)
-  )),
-)
+changeOnly(diff) // DBIOAction[Unit, ...]
 ```
 
-All variants have a `syncDiscard` counterpart that returns `DBIOAction[Unit, ...]`.
+### Batch Dispatch
 
-For `Seq[Difference[A]]`, `syncEach` / `syncEachDiscard` dispatch to per-element handlers instead of batch handlers.
+`Sync.batchNel` and `Sync.batchSeq` group differences by type and pass each group to the corresponding handler in a single call. Use these for bulk operations like batch inserts or deletes.
+
+`batchNel` handlers receive `NonEmptyList`, guaranteeing at least one element:
+
+```scala
+val batchHandler = Sync.batchNel[Item]
+  .added(ds => itemTable ++= ds.toList.map(_.value))
+  .removed(ds => itemTable.filter(_.id inSet ds.toList.map(_.value.id)).delete)
+  .changed(ds => DBIO.sequence(ds.toList.map(d =>
+    itemTable.filter(_.id === d.oldValue.id).update(d.newValue)
+  )))
+
+val diffs: Seq[Difference[Item]] = Differ.diff(newItems).from(oldItems)
+batchHandler(diffs)
+```
+
+`batchSeq` handlers receive `Seq` — useful when the downstream API already expects `Seq`:
+
+```scala
+val batchHandler = Sync.batchSeq[Item]
+  .added(ds => itemTable ++= ds.map(_.value))
+  .removed(ds => itemTable.filter(_.id inSet ds.map(_.value.id)).delete)
+  .void
+```
 
 ## ZIO Integration
 

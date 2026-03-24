@@ -21,7 +21,7 @@ trait DifferComponent { self: JdbcProfile =>
       def apply[D](d: D)(using
         @implicitNotFound(
           "Cannot dispatch ${D} through Sync handlers. " +
-            "Supported diff types — Sync[A]: Difference[A], Option[Difference[A]], Difference.Tracked[A], Seq[Difference[A]]; Sync.batch[A]: Seq[Difference[A]]."
+            "Supported diff types — Sync[A]: Difference[A], Option[Difference[A]], Difference.Tracked[A], Seq[Difference[A]]; Sync.batchSeq[A] / Sync.batchNel[A]: Seq[Difference[A]]."
         )
         s: Syncable[D, A, F],
         @implicitNotFound(

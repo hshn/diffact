@@ -7,8 +7,13 @@ import cats.kernel.Monoid
 import slick.dbio.*
 
 import diffact.*
+import scala.annotation.implicitNotFound
 import scala.concurrent.ExecutionContext
 
+@implicitNotFound(
+  "Cannot dispatch ${D} through Sync handlers. " +
+    "Supported diff types — Sync[A]: Difference[A], Option[Difference[A]], Difference.Tracked[A], Seq[Difference[A]]; Sync.batch[A]: Seq[Difference[A]]."
+)
 trait Syncable[-D, A, F[_]] {
   def sync[R: Monoid](difference: D)(
     add: F[Difference.Added[A]] => DBIOAction[R, NoStream, Effect.Write],

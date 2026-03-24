@@ -7,6 +7,7 @@ import cats.implicits.*
 import slick.jdbc.H2Profile
 
 import diffact.Difference
+import scala.compiletime.testing.typeCheckErrors
 
 object SyncSpec extends SlickZIOSpec("sync-test") {
 
@@ -161,6 +162,57 @@ object SyncSpec extends SlickZIOSpec("sync-test") {
           allHandlers(Difference.Tracked.Replaced(1, 2))
             .map(result => assertTrue(result == "removed:1added:2"))
         }
+      }
+    }
+
+    suiteAll("compile errors") {
+      test("suggests .void when handler return types differ") {
+        val errors = typeCheckErrors(
+          """
+          import slick.jdbc.H2Profile
+          import diffact.slick.*
+          import diffact.*
+          object P extends H2Profile with DifferComponent { object A extends JdbcAPI with DifferApi }
+          import P.A.*
+          Sync[Int]
+            .added(d => DBIO.successful(d.value))
+            .removed(d => DBIO.successful(s"${d.value}"))
+            .apply(Difference.Added(1))
+          """
+        )
+        assertTrue(errors.exists(_.message.contains(".void")))
+      }
+      test("reports unsupported diff type for Sync") {
+        val errors = typeCheckErrors(
+          """
+          import slick.jdbc.H2Profile
+          import diffact.slick.*
+          import diffact.*
+          object P2 extends H2Profile with DifferComponent { object A extends JdbcAPI with DifferApi }
+          import P2.A.*
+          Sync[Int]
+            .added(d => DBIO.successful(d.value))
+            .void
+            .apply("not a diff")
+          """
+        )
+        assertTrue(errors.exists(_.message.contains("Cannot dispatch")))
+      }
+      test("reports unsupported diff type for Sync.batch") {
+        val errors = typeCheckErrors(
+          """
+          import slick.jdbc.H2Profile
+          import diffact.slick.*
+          import diffact.*
+          object P3 extends H2Profile with DifferComponent { object A extends JdbcAPI with DifferApi }
+          import P3.A.*
+          Sync.batch[Int]
+            .added(nel => DBIO.successful(nel.size))
+            .void
+            .apply(Difference.Added(1))
+          """
+        )
+        assertTrue(errors.exists(_.message.contains("Cannot dispatch")))
       }
     }
 

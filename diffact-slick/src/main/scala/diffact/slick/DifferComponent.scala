@@ -53,9 +53,9 @@ trait DifferComponent { self: JdbcProfile =>
       )
 
       def batch[A]: Sync[A, Nothing, Nothing, Nothing, NonEmptyList] = new Sync[A, Nothing, Nothing, Nothing, NonEmptyList](
-        add = _ => DBIO.failed(new IllegalStateException("No Sync handler for Added")),
-        remove = _ => DBIO.failed(new IllegalStateException("No Sync handler for Removed")),
-        change = _ => DBIO.failed(new IllegalStateException("No Sync handler for Changed")),
+        add = _ => DBIO.failed(new IllegalStateException("No SyncBatch handler for Added")),
+        remove = _ => DBIO.failed(new IllegalStateException("No SyncBatch handler for Removed")),
+        change = _ => DBIO.failed(new IllegalStateException("No SyncBatch handler for Changed")),
       )
     }
   }

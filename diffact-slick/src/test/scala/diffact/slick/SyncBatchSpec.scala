@@ -15,7 +15,8 @@ object SyncBatchSpec extends SlickZIOSpec("sync-batch-test") {
   }
   import TestProfile.TestApi.*
 
-  private val allHandlers = Sync.batch[Int]
+  private val allHandlers = Sync
+    .batch[Int]
     .added(nel => DBIO.successful(nel.map(d => s"added:${d.value}").toList))
     .removed(nel => DBIO.successful(nel.map(d => s"removed:${d.value}").toList))
     .changed(nel => DBIO.successful(nel.map(d => s"changed:${d.oldValue}->${d.newValue}").toList))
@@ -45,10 +46,11 @@ object SyncBatchSpec extends SlickZIOSpec("sync-batch-test") {
 
     suiteAll("void") {
       test("unifies distinct handler return types to Unit") {
-        val handler = Sync.batch[Int]
-          .added(nel => DBIO.successful(nel.size))              // RA = Int
-          .removed(nel => DBIO.successful(s"${nel.size}"))      // RR = String
-          .changed(nel => DBIO.successful(nel.size > 0))        // RC = Boolean
+        val handler = Sync
+          .batch[Int]
+          .added(nel => DBIO.successful(nel.size))         // RA = Int
+          .removed(nel => DBIO.successful(s"${nel.size}")) // RR = String
+          .changed(nel => DBIO.successful(nel.size > 0))   // RC = Boolean
           .void
         run {
           handler(Seq(Difference.Added(1)))
@@ -56,7 +58,8 @@ object SyncBatchSpec extends SlickZIOSpec("sync-batch-test") {
         }
       }
       test("enables selective handlers") {
-        val handler = Sync.batch[Int]
+        val handler = Sync
+          .batch[Int]
           .changed(nel => DBIO.successful(nel.size))
           .void
         run {
@@ -89,7 +92,8 @@ object SyncBatchSpec extends SlickZIOSpec("sync-batch-test") {
 
     suiteAll("builder replaces handler") {
       test("later added handler overrides earlier one") {
-        val handler = Sync.batch[Int]
+        val handler = Sync
+          .batch[Int]
           .added(nel => DBIO.successful(nel.map(d => s"first:${d.value}").toList))
           .removed(nel => DBIO.successful(nel.map(d => s"removed:${d.value}").toList))
           .changed(nel => DBIO.successful(List("changed")))

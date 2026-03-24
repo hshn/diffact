@@ -250,12 +250,14 @@ val changeOnly = Sync[User]
 changeOnly(diff) // DBIOAction[Unit, ...]
 ```
 
-### Sync.batch
+### Batch Dispatch
 
-`Sync.batch` is similar to `Sync`, but handlers receive a `NonEmptyList` of grouped differences instead of individual elements. Use this for bulk operations:
+`Sync.batchNel` and `Sync.batchSeq` group differences by type and pass each group to the corresponding handler in a single call. Use these for bulk operations like batch inserts or deletes.
+
+`batchNel` handlers receive `NonEmptyList`, guaranteeing at least one element:
 
 ```scala
-val batchHandler = Sync.batch[Item]
+val batchHandler = Sync.batchNel[Item]
   .added(ds => itemTable ++= ds.toList.map(_.value))
   .removed(ds => itemTable.filter(_.id inSet ds.toList.map(_.value.id)).delete)
   .changed(ds => DBIO.sequence(ds.toList.map(d =>
@@ -264,6 +266,15 @@ val batchHandler = Sync.batch[Item]
 
 val diffs: Seq[Difference[Item]] = Differ.diff(newItems).from(oldItems)
 batchHandler(diffs)
+```
+
+`batchSeq` handlers receive `Seq` — useful when the downstream API already expects `Seq`:
+
+```scala
+val batchHandler = Sync.batchSeq[Item]
+  .added(ds => itemTable ++= ds.map(_.value))
+  .removed(ds => itemTable.filter(_.id inSet ds.map(_.value.id)).delete)
+  .void
 ```
 
 ## ZIO Integration

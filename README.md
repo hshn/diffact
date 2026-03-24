@@ -213,7 +213,7 @@ import MyProfile.api.*
 
 ### Sync
 
-`Sync` is a builder for declaratively registering per-handler dispatch logic. Register only the handlers you need, then call `void` if you don't care about the return value:
+`Sync` is a builder for declaratively registering per-handler dispatch logic:
 
 ```scala
 val handler = Sync[User]

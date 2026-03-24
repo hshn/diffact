@@ -1,5 +1,7 @@
 package diffact.slick
 
+import cats.Id
+import cats.data.NonEmptyList
 import cats.implicits.*
 import cats.kernel.Monoid
 import slick.dbio.*
@@ -7,17 +9,17 @@ import slick.dbio.*
 import diffact.*
 import scala.concurrent.ExecutionContext
 
-trait Syncable[-D, A] {
+trait Syncable[-D, A, F[_]] {
   def sync[R: Monoid](difference: D)(
-    add: Difference.Added[A] => DBIOAction[R, NoStream, Effect.Write],
-    remove: Difference.Removed[A] => DBIOAction[R, NoStream, Effect.Write],
-    change: Difference.Changed[A] => DBIOAction[R, NoStream, Effect.Write],
+    add: F[Difference.Added[A]] => DBIOAction[R, NoStream, Effect.Write],
+    remove: F[Difference.Removed[A]] => DBIOAction[R, NoStream, Effect.Write],
+    change: F[Difference.Changed[A]] => DBIOAction[R, NoStream, Effect.Write],
   )(using ExecutionContext): DBIOAction[R, NoStream, Effect.Write]
 }
 
 object Syncable {
 
-  given syncableDifference[A]: Syncable[Difference[A], A] with {
+  given syncableDifference[A]: Syncable[Difference[A], A, Id] with {
     def sync[R: Monoid](difference: Difference[A])(
       add: Difference.Added[A] => DBIOAction[R, NoStream, Effect.Write],
       remove: Difference.Removed[A] => DBIOAction[R, NoStream, Effect.Write],
@@ -29,7 +31,7 @@ object Syncable {
     }
   }
 
-  given syncableOption[A](using base: Syncable[Difference[A], A]): Syncable[Option[Difference[A]], A] with {
+  given syncableOption[A](using base: Syncable[Difference[A], A, Id]): Syncable[Option[Difference[A]], A, Id] with {
     def sync[R: Monoid](difference: Option[Difference[A]])(
       add: Difference.Added[A] => DBIOAction[R, NoStream, Effect.Write],
       remove: Difference.Removed[A] => DBIOAction[R, NoStream, Effect.Write],
@@ -40,7 +42,7 @@ object Syncable {
     }
   }
 
-  given syncableTracked[A]: Syncable[Difference.Tracked[A], A] with {
+  given syncableTracked[A]: Syncable[Difference.Tracked[A], A, Id] with {
     def sync[R: Monoid](difference: Difference.Tracked[A])(
       add: Difference.Added[A] => DBIOAction[R, NoStream, Effect.Write],
       remove: Difference.Removed[A] => DBIOAction[R, NoStream, Effect.Write],
@@ -58,7 +60,7 @@ object Syncable {
     }
   }
 
-  given syncableSeq[A]: Syncable[Seq[Difference[A]], A] with {
+  given syncableSeq[A]: Syncable[Seq[Difference[A]], A, Id] with {
     def sync[R: Monoid](difference: Seq[Difference[A]])(
       add: Difference.Added[A] => DBIOAction[R, NoStream, Effect.Write],
       remove: Difference.Removed[A] => DBIOAction[R, NoStream, Effect.Write],
@@ -71,6 +73,23 @@ object Syncable {
         r1 <- maybeRemoved.fold(empty)(nel => DBIO.sequence(nel.toList.map(remove)).map(_.combineAll))
         r2 <- maybeAdded.fold(empty)(nel => DBIO.sequence(nel.toList.map(add)).map(_.combineAll))
         r3 <- maybeChanged.fold(empty)(nel => DBIO.sequence(nel.toList.map(change)).map(_.combineAll))
+      } yield r1 |+| r2 |+| r3
+    }
+  }
+
+  given syncableSeqNonEmptyList[A]: Syncable[Seq[Difference[A]], A, NonEmptyList] with {
+    override def sync[R: Monoid](difference: Seq[Difference[A]])(
+      add: NonEmptyList[Difference.Added[A]] => DBIOAction[R, NoStream, Effect.Write],
+      remove: NonEmptyList[Difference.Removed[A]] => DBIOAction[R, NoStream, Effect.Write],
+      change: NonEmptyList[Difference.Changed[A]] => DBIOAction[R, NoStream, Effect.Write],
+    )(using ExecutionContext): DBIOAction[R, NoStream, Effect.Write] = {
+      val empty                                    = DBIO.successful(Monoid[R].empty)
+      val (maybeAdded, maybeRemoved, maybeChanged) = difference.groupNelByType
+
+      for {
+        r1 <- maybeRemoved.fold(empty)(remove)
+        r2 <- maybeAdded.fold(empty)(add)
+        r3 <- maybeChanged.fold(empty)(change)
       } yield r1 |+| r2 |+| r3
     }
   }

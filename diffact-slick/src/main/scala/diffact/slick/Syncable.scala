@@ -7,13 +7,8 @@ import cats.kernel.Monoid
 import slick.dbio.*
 
 import diffact.*
-import scala.annotation.implicitNotFound
 import scala.concurrent.ExecutionContext
 
-@implicitNotFound(
-  "Cannot dispatch ${D} through Sync handlers. " +
-    "Supported diff types — Sync[A]: Difference[A], Option[Difference[A]], Difference.Tracked[A], Seq[Difference[A]]; Sync.batch[A]: Seq[Difference[A]]."
-)
 trait Syncable[-D, A, F[_]] {
   def sync[R: Monoid](difference: D)(
     add: F[Difference.Added[A]] => DBIOAction[R, NoStream, Effect.Write],
@@ -95,6 +90,23 @@ object Syncable {
         r1 <- maybeRemoved.fold(empty)(remove)
         r2 <- maybeAdded.fold(empty)(add)
         r3 <- maybeChanged.fold(empty)(change)
+      } yield r1 |+| r2 |+| r3
+    }
+  }
+
+  given syncableSeqSeq[A]: Syncable[Seq[Difference[A]], A, Seq] with {
+    override def sync[R: Monoid](difference: Seq[Difference[A]])(
+      add: Seq[Difference.Added[A]] => DBIOAction[R, NoStream, Effect.Write],
+      remove: Seq[Difference.Removed[A]] => DBIOAction[R, NoStream, Effect.Write],
+      change: Seq[Difference.Changed[A]] => DBIOAction[R, NoStream, Effect.Write],
+    )(using ExecutionContext): DBIOAction[R, NoStream, Effect.Write] = {
+      val empty                                    = DBIO.successful(Monoid[R].empty)
+      val (maybeAdded, maybeRemoved, maybeChanged) = difference.groupNelByType
+
+      for {
+        r1 <- maybeRemoved.fold(empty)(nel => remove(nel.toList))
+        r2 <- maybeAdded.fold(empty)(nel => add(nel.toList))
+        r3 <- maybeChanged.fold(empty)(nel => change(nel.toList))
       } yield r1 |+| r2 |+| r3
     }
   }

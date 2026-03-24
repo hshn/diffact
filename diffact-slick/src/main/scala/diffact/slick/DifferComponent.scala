@@ -7,6 +7,7 @@ import cats.kernel.Monoid
 import slick.jdbc.JdbcProfile
 
 import diffact.*
+import scala.annotation.implicitNotFound
 import scala.concurrent.ExecutionContext
 
 trait DifferComponent { self: JdbcProfile =>
@@ -18,7 +19,15 @@ trait DifferComponent { self: JdbcProfile =>
     ) {
 
       def apply[D](d: D)(using
+        @implicitNotFound(
+          "Cannot dispatch ${D} through Sync handlers. " +
+            "Supported diff types — Sync[A]: Difference[A], Option[Difference[A]], Difference.Tracked[A], Seq[Difference[A]]; Sync.batch[A]: Seq[Difference[A]]."
+        )
         s: Syncable[D, A, F],
+        @implicitNotFound(
+          "Handler return types must be identical to call Sync#apply directly. " +
+            "Use .void to discard results, or ensure all handlers return the same type."
+        )
         eq: Eq3[RA, RR, RC],
         m: Monoid[RA],
         ec: ExecutionContext,
@@ -52,11 +61,14 @@ trait DifferComponent { self: JdbcProfile =>
         change = _ => DBIO.failed(new IllegalStateException("No Sync handler for Changed")),
       )
 
-      def batch[A]: Sync[A, Nothing, Nothing, Nothing, NonEmptyList] = new Sync[A, Nothing, Nothing, Nothing, NonEmptyList](
+      def batch[F[_], A]: Sync[A, Nothing, Nothing, Nothing, F] = new Sync[A, Nothing, Nothing, Nothing, F](
         add = _ => DBIO.failed(new IllegalStateException("No SyncBatch handler for Added")),
         remove = _ => DBIO.failed(new IllegalStateException("No SyncBatch handler for Removed")),
         change = _ => DBIO.failed(new IllegalStateException("No SyncBatch handler for Changed")),
       )
+
+      def batchSeq[A]: Sync[A, Nothing, Nothing, Nothing, Seq]          = batch[Seq, A]
+      def batchNel[A]: Sync[A, Nothing, Nothing, Nothing, NonEmptyList] = batch[NonEmptyList, A]
     }
   }
 }

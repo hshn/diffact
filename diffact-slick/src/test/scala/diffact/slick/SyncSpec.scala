@@ -206,7 +206,7 @@ object SyncSpec extends SlickZIOSpec("sync-test") {
           import diffact.*
           object P3 extends H2Profile with DifferComponent { object A extends JdbcAPI with DifferApi }
           import P3.A.*
-          Sync.batch[Int]
+          Sync.batchNel[Int]
             .added(nel => DBIO.successful(nel.size))
             .void
             .apply(Difference.Added(1))

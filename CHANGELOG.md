@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/hshn/diffact/compare/v0.6.0...v0.7.0) (2026-03-24)
+
+
+### Features
+
+* replace sync extension methods with a reusable Sync builder ([#42](https://github.com/hshn/diffact/issues/42)) ([0018f2c](https://github.com/hshn/diffact/commit/0018f2cc0ec9aceb5870fb652b508ccb0126b839))
+
 ## [0.6.0](https://github.com/hshn/diffact/compare/v0.5.0...v0.6.0) (2026-03-10)
 
 

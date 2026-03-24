@@ -30,7 +30,7 @@ lazy val diffactZio = (project in file("diffact-zio"))
   .settings(
     name := "diffact-zio",
     libraryDependencies ++= Seq(
-      "dev.zio"       %% "zio-prelude" % "1.0.0-RC45",
+      "dev.zio"       %% "zio-prelude" % "1.0.0-RC46",
       "org.typelevel" %% "cats-core"   % "2.13.0",
     ),
     testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework"),

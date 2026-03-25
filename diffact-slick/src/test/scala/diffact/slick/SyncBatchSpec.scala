@@ -10,8 +10,8 @@ import diffact.Difference
 
 object SyncBatchSpec extends SlickZIOSpec("sync-batch-test") {
 
-  object TestProfile extends H2Profile with DifferComponent {
-    object TestApi extends JdbcAPI with DifferApi
+  object TestProfile extends H2Profile with DiffactComponent {
+    object TestApi extends JdbcAPI with DiffactApi
   }
   import TestProfile.TestApi.*
 

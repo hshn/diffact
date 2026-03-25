@@ -4,8 +4,8 @@ import zio.*
 import zio.prelude.fx.ZPure
 import zio.test.*
 
-object ZPureDifferExtensionSpec extends ZIOSpecDefault {
-  override def spec: Spec[TestEnvironment & Scope, Any] = suiteAll("ZPureDifferExtension") {
+object DiffactZPureExtensionSpec extends ZIOSpecDefault {
+  override def spec: Spec[TestEnvironment & Scope, Any] = suiteAll("DiffactZPureExtension") {
     suiteAll("runAllStateDiff") {
       test("returns diff when state changes") {
         val zpure  = ZPure.update[Int, Int](_ => 2).map(_ => "result")

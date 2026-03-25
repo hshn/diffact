@@ -7,8 +7,8 @@ import slick.jdbc.JdbcProfile
 
 import diffact.*
 
-trait DifferZPureComponent { self: JdbcProfile =>
-  trait DifferZPureApi { api: JdbcAPI =>
+trait DiffactZPureComponent { self: JdbcProfile =>
+  trait DiffactZPureApi { api: JdbcAPI =>
 
     extension [W, S1, S2, R, E, A](zpure: ZPure[W, S1, S2, R, E, A]) {
       def runAllStateAsDBIO(

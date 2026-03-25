@@ -7,8 +7,8 @@ import cats.data.NonEmptyList
 
 import diffact.Difference
 
-object DifferExtensionSpec extends ZIOSpecDefault {
-  override def spec: Spec[TestEnvironment & Scope, Any] = suiteAll("DifferExtension") {
+object DiffactExtensionSpec extends ZIOSpecDefault {
+  override def spec: Spec[TestEnvironment & Scope, Any] = suiteAll("DiffactExtension") {
     suiteAll("groupNelByType") {
       test("groups differences as NonEmptyList options") {
         val diffs: Seq[Difference[Int]] = Seq(

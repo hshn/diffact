@@ -10,8 +10,8 @@ import diffact.*
 import scala.annotation.implicitNotFound
 import scala.concurrent.ExecutionContext
 
-trait DifferComponent { self: JdbcProfile =>
-  trait DifferApi { api: JdbcAPI =>
+trait DiffactComponent { self: JdbcProfile =>
+  trait DiffactApi { api: JdbcAPI =>
     class Sync[A, RA, RR, RC, F[_]] private[diffact] (
       add: F[Difference.Added[A]] => DBIOAction[RA, NoStream, Effect.Write],
       remove: F[Difference.Removed[A]] => DBIOAction[RR, NoStream, Effect.Write],

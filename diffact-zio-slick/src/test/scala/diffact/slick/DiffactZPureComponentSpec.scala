@@ -9,14 +9,14 @@ import slick.jdbc.H2Profile
 
 import diffact.*
 
-object DifferZPureComponentSpec extends SlickZIOSpec("test2") {
+object DiffactZPureComponentSpec extends SlickZIOSpec("test2") {
 
-  object TestProfile extends H2Profile with DifferZPureComponent with DifferComponent {
-    object TestApi extends JdbcAPI with DifferZPureApi with DifferApi
+  object TestProfile extends H2Profile with DiffactZPureComponent with DiffactComponent {
+    object TestApi extends JdbcAPI with DiffactZPureApi with DiffactApi
   }
   import TestProfile.TestApi.*
 
-  override def spec = suiteAll("DifferZPureComponent") {
+  override def spec = suiteAll("DiffactZPureComponent") {
     suiteAll("runAllStateAsDBIO") {
       test("wraps successful result in DBIO") {
         val zpure = ZPure.update[Int, Int](_ => 2).map(_ => "result")

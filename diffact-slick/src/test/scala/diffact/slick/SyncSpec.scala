@@ -11,8 +11,8 @@ import scala.compiletime.testing.typeCheckErrors
 
 object SyncSpec extends SlickZIOSpec("sync-test") {
 
-  object TestProfile extends H2Profile with DifferComponent {
-    object TestApi extends JdbcAPI with DifferApi
+  object TestProfile extends H2Profile with DiffactComponent {
+    object TestApi extends JdbcAPI with DiffactApi
   }
   import TestProfile.TestApi.*
 
@@ -172,7 +172,7 @@ object SyncSpec extends SlickZIOSpec("sync-test") {
           import slick.jdbc.H2Profile
           import diffact.slick.*
           import diffact.*
-          object P extends H2Profile with DifferComponent { object A extends JdbcAPI with DifferApi }
+          object P extends H2Profile with DiffactComponent { object A extends JdbcAPI with DiffactApi }
           import P.A.*
           Sync[Int]
             .added(d => DBIO.successful(d.value))
@@ -188,7 +188,7 @@ object SyncSpec extends SlickZIOSpec("sync-test") {
           import slick.jdbc.H2Profile
           import diffact.slick.*
           import diffact.*
-          object P2 extends H2Profile with DifferComponent { object A extends JdbcAPI with DifferApi }
+          object P2 extends H2Profile with DiffactComponent { object A extends JdbcAPI with DiffactApi }
           import P2.A.*
           Sync[Int]
             .added(d => DBIO.successful(d.value))
@@ -204,7 +204,7 @@ object SyncSpec extends SlickZIOSpec("sync-test") {
           import slick.jdbc.H2Profile
           import diffact.slick.*
           import diffact.*
-          object P3 extends H2Profile with DifferComponent { object A extends JdbcAPI with DifferApi }
+          object P3 extends H2Profile with DiffactComponent { object A extends JdbcAPI with DiffactApi }
           import P3.A.*
           Sync.batchNel[Int]
             .added(nel => DBIO.successful(nel.size))

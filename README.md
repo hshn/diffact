@@ -199,13 +199,13 @@ case class Replaced[+A](removedValue: A, addedValue: A)       extends Tracked[A]
 
 ### Setup
 
-Mix `DifferComponent` into your Slick profile:
+Mix `DiffactComponent` into your Slick profile:
 
 ```scala
 import diffact.slick.*
 
-object MyProfile extends slick.jdbc.PostgresProfile with DifferComponent {
-  object api extends JdbcAPI with DifferApi
+object MyProfile extends slick.jdbc.PostgresProfile with DiffactComponent {
+  object api extends JdbcAPI with DiffactApi
 }
 
 import MyProfile.api.*
@@ -307,9 +307,9 @@ Combines ZPure state-diff with Slick. Mix in both components:
 import diffact.slick.*
 
 object MyProfile extends slick.jdbc.PostgresProfile
-  with DifferComponent
-  with DifferZPureComponent {
-  object api extends JdbcAPI with DifferApi with DifferZPureApi
+  with DiffactComponent
+  with DiffactZPureComponent {
+  object api extends JdbcAPI with DiffactApi with DiffactZPureApi
 }
 
 import MyProfile.api.*

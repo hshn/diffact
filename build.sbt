@@ -45,7 +45,7 @@ lazy val diffactSlick = (project in file("diffact-slick"))
     libraryDependencies ++= Seq(
       "com.typesafe.slick" %% "slick"     % "3.6.1",
       "org.typelevel"      %% "cats-core" % "2.13.0",
-      "com.h2database"      % "h2"        % "2.2.224" % Test,
+      "com.h2database"      % "h2"        % "2.4.240" % Test,
     ),
     testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework"),
   )

@@ -8,7 +8,7 @@ ThisBuild / developers   := List(
 ThisBuild / description   := "Structural diff detection library for Scala 3"
 ThisBuild / versionScheme := Some("early-semver")
 
-val zioVersion = "2.1.22"
+val zioVersion = "2.1.26"
 
 lazy val diffact = (project in file(".") withId "diffact")
   .aggregate(diffactCore, diffactZio, diffactSlick, diffactZioSlick)
